@@ -2,24 +2,31 @@ package com.lab.repository;
 
 import com.lab.domain.Entity;
 import com.lab.exceptions.RepositoryException;
+import com.lab.validator.Validator;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class  InMemoryRepository< E extends Entity<Integer>> implements Repository<Integer , E>{
-    protected Map<Integer , E> entities = new HashMap<>();
-    protected Integer lastId = 0;
+public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository<ID , E>{
+    private Map<ID , E> entities = new HashMap<>();
+    private Validator<E> validator;
+
+    public InMemoryRepository(Validator<E> validator) {
+        this.validator = validator;
+    }
 
     @Override
     public void save(E entity) {
-        lastId++;
-        entity.setId(lastId);
+        validator.validate(entity);
+        if(entities.containsKey(entity.getId())){
+            throw new RepositoryException("An entity with the same id already exists")
+        }
         entities.put(entity.getId() ,entity);
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(ID id) {
         if(!entities.containsKey(id)){
             throw new RepositoryException("Nu exista un entitate cu acesst id!");
         }

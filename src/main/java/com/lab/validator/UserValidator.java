@@ -7,9 +7,15 @@ public class UserValidator implements Validator<User> {
     @Override
     public void validate(User entity) throws ValidationException {
         StringBuilder errors = new StringBuilder();
-        if(entity.getAge() == null || entity.getAge() < 0 ||  entity.getAge() > 150) errors.append("Varsta invalida!\n");
-        if(entity.getFirstName() == null || entity.getFirstName().isBlank()) errors.append("Prenume invalid!\n");
-        if(entity.getLastName() == null || entity.getLastName().isBlank()) errors.append("Nume de familie invalid!\n");
+        if(entity.getId()  <= 0) errors.append("Id must be greater than zero!");
+
+        if(entity.getFirstName() == null ) errors.append("First name must not be null!");
+        else if(entity.getFirstName().isBlank()) errors.append("First name must not be blank!");
+        else if (Character.isLowerCase(entity.getFirstName().charAt(0))) errors.append("First name must start with uppercase!\n");
+
+        if(entity.getLastName() == null ) errors.append("Last name must not be null!");
+        else if(entity.getLastName().isBlank()) errors.append("Last name must not be blank!");
+        else if (Character.isLowerCase(entity.getLastName().charAt(0))) errors.append("Last name must start with uppercase!\n");
         if(!errors.isEmpty()){
             throw new ValidationException(errors.toString());
         }

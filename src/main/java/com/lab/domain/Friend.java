@@ -1,46 +1,26 @@
 package com.lab.domain;
 
 
+import java.time.LocalDateTime;
+
 /**
  * Reprezinta o relatie de prietenie intre doi utilizatori ai retelei
  */
-public class Friend extends Entity<Integer> {
-    private Integer idFriend1;
-    private Integer idFriend2;
+public class Friend extends Entity<Tuple<Long ,Long>> {
+    private LocalDateTime date;
 
-    public Friend(Integer id, Integer idFriend1, Integer idFriend2) {
-        setId(id);
-        this.idFriend1 = idFriend1;
-        this.idFriend2 = idFriend2;
+    public Friend(Long idFriend1, Long idFriend2) {
+        Long left = Math.min(idFriend1 , idFriend2);
+        Long right = Math.max(idFriend1 , idFriend2);
+        this.setId(new Tuple<>(left , right));
+        this.date = LocalDateTime.now();
     }
 
-    public Friend(Integer idFriend1, Integer idFriend2) {
-        this.idFriend1 = idFriend1;
-        this.idFriend2 = idFriend2;
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public Integer getIdFriend1() {
-        return idFriend1;
-    }
-
-    public void setIdFriend1(Integer idFriend1) {
-        this.idFriend1 = idFriend1;
-    }
-
-    public Integer getIdFriend2() {
-        return idFriend2;
-    }
-
-    public void setIdFriend2(Integer idFriend2) {
-        this.idFriend2 = idFriend2;
-    }
-
-    @Override
-    public String toString() {
-        return "Friend{" +
-                "id=" + getId() +
-                ", idFriend1=" + idFriend1 +
-                ", idFriend2=" + idFriend2 +
-                '}';
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 }

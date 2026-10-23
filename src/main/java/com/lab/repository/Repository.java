@@ -3,7 +3,6 @@ package com.lab.repository;
 
 import com.lab.domain.Entity;
 
-import java.util.List;
 
 /**
  * Interfata CRUD generica pentru gestionarea datelor
@@ -34,5 +33,5 @@ public interface Repository<ID , E extends Entity<ID>> {
      * Returneaza o lista cu toate entitatile din repository
      * @return o lista continand toate entitatile
      */
-    List<E> findAll();
+    Iterable<E> findAll();
 }
