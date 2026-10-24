@@ -1,7 +1,7 @@
 package com.lab.ui;
 
 
-import com.lab.domain.Friend;
+import com.lab.domain.Friendship;
 import com.lab.domain.User;
 import com.lab.service.FriendshipService;
 import com.lab.service.NetworkService;
@@ -128,7 +128,7 @@ public class ConsoleUi {
     }
 
     private void handleShowFriendships(){
-        for(Friend f : friendshipService.findAll()){
+        for(Friendship f : friendshipService.findAll()){
             System.out.println(f);
         }
     }

@@ -5,12 +5,11 @@ import com.lab.exceptions.RepositoryException;
 import com.lab.validator.Validator;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository<ID , E>{
-    private Map<ID , E> entities = new HashMap<>();
-    private Validator<E> validator;
+    private final Map<ID , E> entities = new HashMap<>();
+    private final Validator<E> validator;
 
     public InMemoryRepository(Validator<E> validator) {
         this.validator = validator;
@@ -20,7 +19,7 @@ public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository
     public void save(E entity) {
         validator.validate(entity);
         if(entities.containsKey(entity.getId())){
-            throw new RepositoryException("An entity with the same id already exists")
+            throw new RepositoryException("An entity with the same id already exists!");
         }
         entities.put(entity.getId() ,entity);
     }
@@ -28,18 +27,18 @@ public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository
     @Override
     public void delete(ID id) {
         if(!entities.containsKey(id)){
-            throw new RepositoryException("Nu exista un entitate cu acesst id!");
+            throw new RepositoryException("An entity with this id does not exist!");
         }
         entities.remove(id);
     }
 
     @Override
-    public List<E> findAll() {
+    public Iterable<E> findAll() {
         return entities.values().stream().toList();
     }
 
     @Override
-    public E findOne(Integer id) {
+    public E findOne(ID id) {
         if(!entities.containsKey(id)){
             return null;
         }

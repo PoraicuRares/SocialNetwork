@@ -1,12 +1,12 @@
 package com.lab.validator;
 
 
-import com.lab.domain.Friend;
+import com.lab.domain.Friendship;
 import com.lab.exceptions.ValidationException;
 
-public class FriendshipValidator implements Validator<Friend> {
+public class FriendshipValidator implements Validator<Friendship> {
     @Override
-    public void validate(Friend entity) throws ValidationException {
+    public void validate(Friendship entity) throws ValidationException {
         if(entity.getId().getLeft() == null || entity.getId().getRight() == null){
             throw new ValidationException("Ids must not be null!");
         }

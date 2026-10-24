@@ -1,7 +1,5 @@
-import com.lab.domain.Friend;
+import com.lab.domain.Friendship;
 import com.lab.domain.User;
-import com.lab.repository.InMemoryFriendRepo;
-import com.lab.repository.InMemoryUserRepo;
 import com.lab.repository.Repository;
 import com.lab.service.FriendshipService;
 import com.lab.service.NetworkService;
@@ -13,9 +11,9 @@ import com.lab.validator.Validator;
 
 void main(){
     Repository<Integer , User> userRepository = new InMemoryUserRepo();
-    Repository<Integer , Friend> friendRepository = new InMemoryFriendRepo();
+    Repository<Integer , Friendship> friendRepository = new InMemoryFriendRepo();
     Validator<User> userValidator = new UserValidator();
-    Validator<Friend> friendValidator = new FriendshipValidator();
+    Validator<Friendship> friendValidator = new FriendshipValidator();
 
     FriendshipService friendshipService = new FriendshipService(friendRepository , userRepository , friendValidator);
     UserService userService = new UserService(userRepository , userValidator);
