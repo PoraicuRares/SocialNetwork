@@ -1,7 +1,8 @@
 package com.lab.exceptions;
 
 /**
- * Exceptie aruncata atunci cand apar erori la accesarea sau modificarea datelor din Repository
+ * Unchecked exception thrown when an error occurs during repository operations,
+ * such as file IO errors, database connection issues, or missing entities
  */
 public class RepositoryException extends RuntimeException {
     public RepositoryException(String message) {

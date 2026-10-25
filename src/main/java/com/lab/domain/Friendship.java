@@ -2,9 +2,10 @@ package com.lab.domain;
 
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
- * Reprezinta o relatie de prietenie intre doi utilizatori ai retelei
+ * Represents a relationship between two users in the social network
  */
 public class Friendship extends Entity<Tuple<Long ,Long>> {
     private LocalDateTime date;
@@ -26,5 +27,10 @@ public class Friendship extends Entity<Tuple<Long ,Long>> {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "First user id : " + getId().getLeft() + " | Second user id  : " + getId().getRight() + " | Date :" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
     }
 }

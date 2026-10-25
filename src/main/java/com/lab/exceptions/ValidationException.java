@@ -1,7 +1,8 @@
 package com.lab.exceptions;
 
 /**
- * Exceptie aruncata atunci cand datele introduse pentru o entitate sunt invalide
+ * Unchecked exception thrown when an entity fails validation rules
+ * before being saved or updated
  */
 public class ValidationException extends RuntimeException {
     public ValidationException(String message) {

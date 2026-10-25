@@ -4,6 +4,10 @@ import com.lab.domain.User;
 import com.lab.exceptions.RepositoryException;
 import com.lab.validator.Validator;
 
+/**
+ * File-based repository implementation for User entities
+ * Extends {@link AbstractFileRepository} to handle specific serialization and deserialization of users
+ */
 public class UserFileRepository extends AbstractFileRepository<Long, User> {
     public UserFileRepository(Validator<User> validator, String fileName) {
         super(validator, fileName);

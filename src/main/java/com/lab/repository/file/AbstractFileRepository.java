@@ -7,6 +7,13 @@ import com.lab.validator.Validator;
 
 import java.io.*;
 
+/**
+ * Abstract generic base class for file persistence.
+ * Implements the Template Method design pattern for converting between objects and text lines.
+ *
+ * @param <ID> the type of the entity's identifier
+ * @param <E> the type of the entity, which must extend {@link Entity}
+ */
 public abstract class AbstractFileRepository<ID , E extends  Entity<ID>> extends InMemoryRepository<ID , E> {
     private final String fileName;
 
@@ -16,8 +23,21 @@ public abstract class AbstractFileRepository<ID , E extends  Entity<ID>> extends
         loadData();
     }
 
+    /**
+     * Extracts an entity from a formatted text line.
+     *
+     * @param line the text line representing the entity
+     * @return the constructed entity object
+     * @throws RepositoryException if the line format is invalid
+     */
     protected abstract E extractEntity(String line);
 
+    /**
+     * Converts an entity into a formatted text string for file storage.
+     *
+     * @param entity the entity to convert
+     * @return the string representation of the entity
+     */
     protected abstract String createEntityAsString(E entity);
 
     private void loadData(){

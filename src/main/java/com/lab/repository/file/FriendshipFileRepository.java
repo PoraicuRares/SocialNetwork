@@ -7,6 +7,10 @@ import com.lab.validator.Validator;
 
 import java.time.LocalDateTime;
 
+/**
+ * File-based repository implementation for {@link Friendship} entities
+ * Extends {@link AbstractFileRepository} to handle specific serialization and deserialization of friendships
+ */
 public class FriendshipFileRepository extends AbstractFileRepository<Tuple<Long,Long>, Friendship> {
     public FriendshipFileRepository(Validator<Friendship> validator, String fileName) {
         super(validator, fileName);

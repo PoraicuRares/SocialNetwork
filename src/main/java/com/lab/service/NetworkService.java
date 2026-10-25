@@ -4,6 +4,7 @@ import com.lab.domain.Friendship;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.EmptyListException;
+import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
 
 import java.util.ArrayList;
@@ -13,7 +14,8 @@ import java.util.Map;
 
 
 /**
- * Service class responsible for graph analysis and algorithms on the social network.
+ * Service class responsible for complex business logic,
+ * graph analysis, and maintaining consistency between users and friendships
  */
 public class NetworkService {
     private final FriendshipService friendshipService;
@@ -49,18 +51,21 @@ public class NetworkService {
         }
     }
 
-    
+    /**
+     * Determines the total number of connected components (communities) in the social network
+     * @return the integer number of communities
+     */
     public int getNumberOfCommunities(){
         Map<Long , List<Long>> adj = buildGraph();
         Map<Long , Boolean> visited = new HashMap<>();
-        int nrOfComunities = 0;
+        int nrOfCommunities = 0;
         for(User users : userService.findAll()){
             if(!visited.containsKey(users.getId())){
                 dfs(users.getId(), adj , visited , new ArrayList<>());
-                nrOfComunities++;
+                nrOfCommunities++;
             }
         }
-        return nrOfComunities;
+        return nrOfCommunities;
     }
 
     private int findLongestPath(long node , Map<Long , List<Long>> adj , Map<Long , Boolean> visited){
@@ -85,9 +90,14 @@ public class NetworkService {
         return users;
     }
 
-    
+    /**
+     * Finds the most sociable community, defined as the connected component
+     * containing the longest path in the graph
+     * @return a List of users belonging to the most sociable community
+     * @throws EmptyListException if there are no friendships in the network
+     */
     public List<User> getMostPopularCommunity(){
-        if(friendshipService.findAll().iterator().hasNext()){
+        if(!friendshipService.findAll().iterator().hasNext()){
             throw new EmptyListException("There are no friendships added");
         }
         List<Long> mostPopularCommunity = new ArrayList<>();
@@ -110,6 +120,12 @@ public class NetworkService {
         return convertIdsToUsers(mostPopularCommunity);
     }
 
+    /**
+     * Adds a friendship between two existing users
+     * @param id1 the identifier of the first user
+     * @param id2 the identifier of the second user
+     * @throws ServiceException if one or both users do not exist
+     */
     public void addFriendship(Long id1, Long id2){
         if(userService.findOne(id1) == null || userService.findOne(id2) == null)
             throw new ServiceException("One or both users do not exist");
@@ -128,6 +144,12 @@ public class NetworkService {
             friendshipService.remove(id);
         }
     }
+
+    /**
+     * Deletes a user and triggers a cascading deletion of all their friendships
+     * @param userId the identifier of the user to delete
+     * @throws RepositoryException if the user does not exist
+     */
     public void deleteUser(Long userId){
         deleteUserFriendships(userId);
         userService.remove(userId);

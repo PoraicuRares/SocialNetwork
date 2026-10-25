@@ -7,6 +7,12 @@ import com.lab.validator.Validator;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * In-memory implementation of the Repository interface
+ * Stores entities in a HashMap and provides basic CRUD operations
+ * @param <ID> the type of the entity's identifier
+ * @param <E> the type of the entity, which must extend Entity
+ */
 public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository<ID , E>{
     private final Map<ID , E> entities = new HashMap<>();
     private final Validator<E> validator;

@@ -3,8 +3,8 @@ package com.lab.domain;
 import java.util.Objects;
 
 /**
- * Clasa de baza pentru toate entitatile din aplicatie
- * @param <ID> tipul de date al identificatorului unic
+ * Base class for all entities in the application
+ * @param <ID> the type of the entity's unique identifier
  */
 public abstract class  Entity<ID>{
     private ID id;

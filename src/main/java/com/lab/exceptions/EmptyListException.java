@@ -1,7 +1,8 @@
 package com.lab.exceptions;
 
 /**
- * Exceptie aruncata atunci cand se incearca operarea pe o lista sau o retea complet goala
+ * Unchecked exception thrown when attempting to perform operations
+ * or retrieve data from an empty collection
  */
 public class EmptyListException extends RuntimeException {
     public EmptyListException(String message) {

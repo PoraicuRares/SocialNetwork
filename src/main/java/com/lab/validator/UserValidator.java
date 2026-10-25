@@ -3,6 +3,10 @@ package com.lab.validator;
 import com.lab.domain.User;
 import com.lab.exceptions.ValidationException;
 
+/**
+ * Validator implementation for User entities
+ * Ensures that the user's ID is valid and that the names are properly formatted
+ */
 public class UserValidator implements Validator<User> {
     @Override
     public void validate(User entity) throws ValidationException {

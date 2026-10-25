@@ -1,7 +1,7 @@
 package com.lab.domain;
 
 /**
- * Reprezinta un utilizator din cadrul retelei de socializare
+ * Represents a user in the social network
  */
 public class User extends Entity<Long> {
 
@@ -41,9 +41,6 @@ public class User extends Entity<Long> {
 
     @Override
     public String toString() {
-        return "User{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                '}';
+        return "ID : " + getId() + " | first name : " + firstName + " | last name : " + lastName;
     }
 }

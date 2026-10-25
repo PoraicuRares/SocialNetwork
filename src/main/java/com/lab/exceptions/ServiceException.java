@@ -1,7 +1,7 @@
 package com.lab.exceptions;
 
 /**
- * Exceptie aruncata atunci cand apar erori logice la nivelul stratului de Service
+ * Unchecked exception thrown when a logical or business error occurs
  */
 public class ServiceException extends RuntimeException {
     public ServiceException(String message) {

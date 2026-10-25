@@ -2,36 +2,42 @@ package com.lab.repository;
 
 
 import com.lab.domain.Entity;
+import com.lab.exceptions.RepositoryException;
+import com.lab.exceptions.ValidationException;
 
 
 /**
- * Interfata CRUD generica pentru gestionarea datelor
- * @param <ID> tipul identificatorului entitatii
- * @param <E> tipul entitatii care extinde clasa Entity
+ * Generic CRUD interface for managing entities
+ * @param <ID> the type of the entity's identifier
+ * @param <E> the type of the entity, which must extend {@link Entity}
  */
 public interface Repository<ID , E extends Entity<ID>> {
+
     /**
-     * Salveaza o entitate in repository
-     * @param entity entitatea care trebuie salvata
+     * Saves the given entity
+     * @param entity the entity to be saved
+     * @throws ValidationException if the entity is not valid
+     * @throws RepositoryException if an entity with the same ID already exists
      */
     void save(E entity);
 
     /**
-     * Sterge entitatea cu identificatorul specificat.
-     * @param id identificatorul entitatii care trebuie stearsa
+     * Removes the entity with the specified identifier
+     * @param id the identifier of the entity to be removed
+     * @throws RepositoryException if an entity with the given ID does not exist
      */
     void delete(ID id);
 
     /**
-     * Cauta si returneaza o entitate pe baza identificatorului
-     * @param id identificatorul entitatii cautate
-     * @return entitatea gasita sau null daca aceasta nu exista
+     * Finds and returns an entity based on its identifier
+     * @param id the identifier of the entity to search for
+     * @return the found entity, or null if it does not exist
      */
     E findOne(ID id);
 
     /**
-     * Returneaza o lista cu toate entitatile din repository
-     * @return o lista continand toate entitatile
+     * Returns an iterable collection of all entities
+     * @return an Iterable containing all entities
      */
     Iterable<E> findAll();
 }
