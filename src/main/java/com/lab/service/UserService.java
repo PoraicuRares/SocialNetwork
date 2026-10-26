@@ -44,6 +44,9 @@ public class UserService {
      * @throws RepositoryException if the user with the given ID does not exist
      */
     public void remove(Long id ){
+        if(userRepository.findOne(id) == null){
+            throw new RepositoryException("There is no user with this id");
+        }
         userRepository.delete(id);
     }
 

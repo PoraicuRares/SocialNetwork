@@ -21,16 +21,29 @@ import java.util.Properties;
  * based on the configuration file settings.
  */
 public class RepositoryFactory {
+    private static RepositoryFactory instance = null;
+
     private final Properties properties;
     private final RepositoryType repositoryType;
 
-    public RepositoryFactory(String configFile){
+    private RepositoryFactory(String configFile){
         properties = loadProperties(configFile);
         String value = properties.getProperty("repository.type");
         if(value == null){
             throw new IllegalArgumentException("The key repository.type is missing from the properties file");
         }
         repositoryType = RepositoryType.valueOf(value.trim().toUpperCase());
+    }
+
+    /**
+     * Returns the Singleton RepositoryFactory instance
+     * @param configFile configuration file name
+     * @return the instance of RepositoryFactory
+     */
+    public static RepositoryFactory getInstance(String configFile){
+        if(instance == null)
+            instance = new RepositoryFactory(configFile);
+        return instance;
     }
 
     private Properties loadProperties(String resource){

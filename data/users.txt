@@ -1,3 +1,6 @@
-1;Rares;Poraicu
-3;Mada;Danescu
-4;Rares;Botanicul
+2;Cezar;Demidov
+5;Cezarica;Lautar
+6;Martiez;Poeri
+7;Mada;Danescu
+8;Rares;Poraicu
+9;Popica;Stefan

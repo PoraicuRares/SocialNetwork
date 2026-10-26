@@ -133,7 +133,13 @@ public class NetworkService {
     }
 
     private void deleteUserFriendships(Long userId){
-        Iterable<Friendship> friendships = friendshipService.findAll();
+        Iterable<Friendship> friendships;
+        try{
+            friendships = friendshipService.findAll();
+        }catch(EmptyListException e){
+            return;
+        }
+
         List<Tuple<Long,Long>> toDelete = new ArrayList<>();
         for(Friendship friendship: friendships){
             Tuple<Long , Long> id = friendship.getId();

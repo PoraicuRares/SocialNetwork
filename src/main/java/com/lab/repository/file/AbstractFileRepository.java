@@ -41,6 +41,11 @@ public abstract class AbstractFileRepository<ID , E extends  Entity<ID>> extends
     protected abstract String createEntityAsString(E entity);
 
     private void loadData(){
+        java.io.File file = new java.io.File(fileName);
+        if(!file.exists()){
+            return;
+        }
+
         int lineNr = 0;
         try(BufferedReader reader = new BufferedReader(new FileReader(fileName))){
             String line;
@@ -53,7 +58,7 @@ public abstract class AbstractFileRepository<ID , E extends  Entity<ID>> extends
             }
         }catch(FileNotFoundException e){
             throw new RepositoryException("The file " +fileName + " does not exist");
-        }catch (IOException e){
+        }catch (IOException | RepositoryException e){
             throw new RepositoryException("Error while reading the file " + fileName  + " at line " + lineNr, e);
         }
     }
