@@ -11,12 +11,19 @@ import com.lab.service.UserService;
 import com.lab.ui.ConsoleUi;
 import com.lab.validator.FriendshipValidator;
 import com.lab.validator.UserValidator;
+import com.lab.validator.Validator;
 
 void main(){
     try{
         RepositoryFactory repositoryFactory = RepositoryFactory.getInstance("config.properties");
 
-        Repository<Long ,User> userRepository = repositoryFactory.createUserRepository(new UserValidator());
+        Validator<User> userValidator = new UserValidator()
+                .andThen(user->{
+                   if(user.getFirstName().length() > 50 || user.getLastName().length() > 50)
+                       throw new ValidationException("Names must have at most 50 characters");
+                });
+
+        Repository<Long ,User> userRepository = repositoryFactory.createUserRepository(userValidator);
         Repository<Tuple<Long,Long> , Friendship> friendshipRepository = repositoryFactory.createFriendshipRepository(new FriendshipValidator());
 
         UserService userService = new UserService(userRepository);
