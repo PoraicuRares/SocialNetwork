@@ -8,9 +8,7 @@ import com.lab.repository.InMemoryRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.db.FriendshipDBRepository;
 import com.lab.repository.db.UserDBRepository;
-import com.lab.repository.file.FriendshipFileRepository;
-import com.lab.repository.file.UserFileRepository;
-import com.lab.validator.Validator;
+import com.lab.repository.file.FileRepository;import com.lab.repository.file.LineConverters;import com.lab.validator.Validator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +79,7 @@ public class RepositoryFactory {
 
             case FILE:
                 String file = getRequiredProperty("repository.file.users");
-                return new UserFileRepository(validator , file);
+                return new FileRepository<>(validator , file , LineConverters::parseUser , LineConverters::formatUser);
 
             case DATABASE:
                 String dbUrl = getRequiredProperty("db.url");
@@ -108,7 +106,7 @@ public class RepositoryFactory {
 
             case FILE:
                 String file = getRequiredProperty("repository.file.friendships");
-                return new FriendshipFileRepository(validator , file);
+                return new FileRepository<>(validator , file , LineConverters::parseFriendship , LineConverters::formatFriendship);
 
             case DATABASE:
                 String dbUrl = getRequiredProperty("db.url");
