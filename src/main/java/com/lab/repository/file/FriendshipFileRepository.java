@@ -20,10 +20,19 @@ public class FriendshipFileRepository extends AbstractFileRepository<Tuple<Long,
     protected Friendship extractEntity(String line) {
         String[] attributes = line.split(";" , -1);
         if(attributes.length != 3)
-            throw new RepositoryException("The line must contain 2 attributes delimited by ';' ");
+            throw new RepositoryException("The line must contain 3 attributes delimited by ';' ");
         Friendship friendship = new Friendship();
-        friendship.setId(new Tuple<>(Long.parseLong(attributes[0])  , Long.parseLong(attributes[1]) ));
-        friendship.setDate(LocalDateTime.parse(attributes[2]));
+
+        Long left = Long.parseLong(attributes[0].trim()) ;
+        Long right = Long.parseLong(attributes[1].trim());
+
+        if(left.compareTo(right) > 0){
+            Long temp = left;
+            left = right;
+            right = temp;
+        }
+        friendship.setId(new Tuple<>(left , right));
+        friendship.setDate(LocalDateTime.parse(attributes[2].trim()));
         return friendship;
     }
 
