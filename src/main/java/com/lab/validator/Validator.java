@@ -20,7 +20,6 @@ public interface Validator <T>{
     /**
      * Composes this validator with another one. The resulting validator applies
      * this validator first and then {@code other}; the first rule that fails stops the validation.
-     *
      * @param other the validator to apply after this one
      * @return a validator that applies both rules in sequence
      */

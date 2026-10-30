@@ -5,6 +5,10 @@ import com.lab.domain.Entity;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
 
+import java.util.List;
+import java.util.function.Predicate;import java.util.stream.Collectors;import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 
 /**
  * Generic CRUD interface for managing entities
@@ -40,4 +44,25 @@ public interface Repository<ID , E extends Entity<ID>> {
      * @return an Iterable containing all entities
      */
     Iterable<E> findAll();
+
+    /**
+     * Returns a sequential stream over all entities.
+     * This is the single place where the {@link Iterable} returned by {@link #findAll()}
+     * is converted into a {@link Stream}.
+     * @return a new stream of all entities; it can be consumed only once
+     */
+    default Stream<E> stream(){
+        return StreamSupport.stream(findAll().spliterator() , false);
+    }
+
+    /**
+     * Returns all entities that satisfy the given condition.
+     * @param filter the condition an entity must satisfy to be included in the result
+     * @return a list with the matching entities, possibly empty
+     */
+    default List<E> findAll(Predicate<E> filter){
+        return stream()
+                .filter(filter)
+                .collect(Collectors.toList());
+    }
 }
