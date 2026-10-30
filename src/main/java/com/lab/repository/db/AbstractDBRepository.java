@@ -2,7 +2,7 @@ package com.lab.repository.db;
 
 import com.lab.domain.Entity;
 import com.lab.repository.Repository;
-import com.lab.validator.Validator;
+import com.lab.validator.Validator;import java.util.Optional;
 
 /**
  * Abstract base class for JDBC Database repositories
@@ -30,7 +30,7 @@ public abstract class AbstractDBRepository<ID , E extends Entity<ID>> implements
     }
 
     @Override
-    public E findOne(ID id) {
+    public Optional<E> findOne(ID id) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 

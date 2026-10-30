@@ -4,7 +4,7 @@ import com.lab.domain.User;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
-import com.lab.repository.Repository;
+import com.lab.repository.Repository;import java.util.Optional;
 
 /**
  * Service class responsible for managing user-related operations
@@ -44,9 +44,8 @@ public class UserService {
      * @throws RepositoryException if the user with the given ID does not exist
      */
     public void remove(Long id ){
-        if(userRepository.findOne(id) == null){
-            throw new RepositoryException("There is no user with this id");
-        }
+        userRepository.findOne(id)
+                .orElseThrow(() -> new RepositoryException("There is no user with this id"));
         userRepository.delete(id);
     }
 
@@ -55,7 +54,7 @@ public class UserService {
      * @param id the identifier of the user to search for
      * @return the User if found, or null otherwise
      */
-    public User findOne(Long id){
+    public Optional<User> findOne(Long id){
         return userRepository.findOne(id);
     }
 

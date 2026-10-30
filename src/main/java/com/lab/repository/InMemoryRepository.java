@@ -5,7 +5,7 @@ import com.lab.exceptions.RepositoryException;
 import com.lab.validator.Validator;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Map;import java.util.Optional;
 
 /**
  * In-memory implementation of the Repository interface
@@ -44,10 +44,7 @@ public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository
     }
 
     @Override
-    public E findOne(ID id) {
-        if(!entities.containsKey(id)){
-            return null;
-        }
-        return entities.get(id);
+    public Optional<E> findOne(ID id) {
+        return Optional.ofNullable(entities.get(id));
     }
 }

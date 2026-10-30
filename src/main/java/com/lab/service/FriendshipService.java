@@ -39,10 +39,9 @@ public class FriendshipService {
         Long left = Math.min(id.getLeft(), id.getRight());
         Long right = Math.max(id.getLeft() , id.getRight());
         Tuple<Long,Long> normalizedId = new Tuple<>(left , right);
-        if(friendRepository.findOne(normalizedId) == null){
-            throw new RepositoryException("There is no friendship with this id");
-        }
 
+        friendRepository.findOne(normalizedId)
+                .orElseThrow(() -> new RepositoryException("There is no friendship with this id"));
         friendRepository.delete(normalizedId);
     }
 

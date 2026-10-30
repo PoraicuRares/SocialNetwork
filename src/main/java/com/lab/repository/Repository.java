@@ -6,7 +6,7 @@ import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
 
 import java.util.List;
-import java.util.function.Predicate;import java.util.stream.Collectors;import java.util.stream.Stream;
+import java.util.Optional;import java.util.function.Predicate;import java.util.stream.Collectors;import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 
@@ -35,9 +35,10 @@ public interface Repository<ID , E extends Entity<ID>> {
     /**
      * Finds and returns an entity based on its identifier
      * @param id the identifier of the entity to search for
-     * @return the found entity, or null if it does not exist
+     * @return an {@link Optional} containing the found entity,
+     * or an empty {@link Optional} if no entity has the given id
      */
-    E findOne(ID id);
+    Optional<E> findOne(ID id);
 
     /**
      * Returns an iterable collection of all entities

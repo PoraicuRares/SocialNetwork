@@ -85,7 +85,7 @@ public class NetworkService {
     private List<User> convertIdsToUsers(List<Long> ids){
         List<User> users = new ArrayList<>();
         for(Long id  : ids){
-            users.add(userService.findOne(id));
+            users.add(userService.findOne(id).orElseThrow());
         }
         return users;
     }
@@ -127,7 +127,7 @@ public class NetworkService {
      * @throws ServiceException if one or both users do not exist
      */
     public void addFriendship(Long id1, Long id2){
-        if(userService.findOne(id1) == null || userService.findOne(id2) == null)
+        if(userService.findOne(id1).isEmpty()  || userService.findOne(id2).isEmpty() )
             throw new ServiceException("One or both users do not exist");
         friendshipService.add(id1 , id2);
     }
