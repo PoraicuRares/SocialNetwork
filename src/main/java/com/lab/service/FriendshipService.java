@@ -8,6 +8,7 @@ import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
 import com.lab.repository.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -20,6 +21,9 @@ import java.util.stream.Stream;
  */
 public class FriendshipService {
     private final Repository<Tuple<Long , Long>, Friendship> friendRepository;
+    private static final Comparator<Friendship> BY_USERS_IDS =
+            Comparator.comparing((Friendship f) -> f.getId().getLeft())
+                    .thenComparing(f ->f.getId().getRight());
 
     public FriendshipService(Repository<Tuple<Long, Long>, Friendship> friendRepository) {
         this.friendRepository = friendRepository;
@@ -53,13 +57,15 @@ public class FriendshipService {
     }
 
     /**
-     * Retrieves all friendships currently established in the network
-     * @return an Iterable containing all friendships
-     * @throws EmptyListException if there are no friendships in the network
+     * Retrieves all users currently registered in the network, sorted by id
+     * @return a list containing all users, sorted by id
+     * @throws EmptyListException if there are no users in the network
      */
-    public Iterable<Friendship> findAll(){
-        Iterable<Friendship> friendships = friendRepository.findAll();
-        if (!friendships.iterator().hasNext()){
+    public List<Friendship> findAll(){
+        List<Friendship> friendships = friendRepository.stream()
+                .sorted(BY_USERS_IDS)
+                .collect(Collectors.toList());
+        if (friendships.isEmpty()){
             throw new EmptyListException("There are no friendships added ");
         }
         return friendships;
@@ -68,7 +74,6 @@ public class FriendshipService {
     /**
      * Retrieves the friendships that satisfy the given condition.
      * Unlike {@link #findAll()}, it does not throw if the result is empty.
-     *
      * @param filter the condition a friendship must satisfy to be included
      * @return a list with the matching friendships, possibly empty
      */

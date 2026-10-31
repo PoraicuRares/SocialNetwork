@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -66,13 +67,15 @@ public class UserService {
     }
 
     /**
-     * Retrieves all users currently registered in the network
-     * @return an Iterable containing all users
+     * Retrieves all users currently registered in the network, sorted by id
+     * @return a list containing all users, sorted by id
      * @throws EmptyListException if there are no users in the network
      */
-    public Iterable<User> findAll(){
-        Iterable<User> users = userRepository.findAll();
-        if(!users.iterator().hasNext()){
+    public List<User> findAll(){
+        List<User> users = userRepository.stream()
+                .sorted(Comparator.comparing(User::getId))
+                .collect(Collectors.toList());
+        if(users.isEmpty()){
             throw new EmptyListException("There are no users added");
         }
         return users;

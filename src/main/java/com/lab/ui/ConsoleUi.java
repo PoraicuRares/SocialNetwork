@@ -1,7 +1,6 @@
 package com.lab.ui;
 
 
-import com.lab.domain.Friendship;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.EmptyListException;
@@ -12,6 +11,8 @@ import com.lab.service.FriendshipService;
 import com.lab.service.NetworkService;
 import com.lab.service.UserService;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class ConsoleUi {
@@ -19,12 +20,23 @@ public class ConsoleUi {
     private final FriendshipService friendshipService;
     private final NetworkService networkService;
     private final Scanner scanner;
+    private final Map<String ,Runnable> commands;
 
     public ConsoleUi(UserService userService, FriendshipService friendshipService, NetworkService networkService) {
         this.userService = userService;
         this.friendshipService = friendshipService;
         this.networkService = networkService;
         this.scanner = new Scanner(System.in);
+        this.commands = Map.of(
+                "1", this::handleAddUser,
+                "2", this::handleRemoveUser,
+                "3", this::handleShowUsers,
+                "4", this::handleAddFriendship,
+                "5", this::handleRemoveFriendship,
+                "6", this::handleShowFriendships,
+                "7", this::handleShowNrOfCommunities,
+                "8", this::handleShowMostSocialCommunity
+        );
     }
 
     public void run(){
@@ -32,29 +44,25 @@ public class ConsoleUi {
         while(isRunning){
             printMenu();
             System.out.print("Choose an option : ");
-            String optiune = scanner.nextLine().trim();
-            try{
-                switch (optiune){
-                    case "1": handleAddUser(); break;
-                    case "2": handleRemoveUser(); break;
-                    case "3": handleShowUsers(); break;
-                    case "4": handleAddFriendship(); break;
-                    case "5": handleRemoveFriendship(); break;
-                    case "6": handleShowFriendships(); break;
-                    case "7": handleShowNrOfCommunities(); break;
-                    case "8": handleShowMostSocialCommunity();break;
-                    case "0":
-                        isRunning = false;
-                        System.out.println("Exiting..");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
-                }
-            }catch (ValidationException | ServiceException | RepositoryException | EmptyListException e){
-                System.out.println("Error : " + e.getMessage());
-            }catch (NumberFormatException e){
-                System.out.println("Input error : Please enter a valid numeric ID");
+            String option = scanner.nextLine().trim();
+            if(option.equals("0")){
+                isRunning = false;
+                System.out.println("Exiting..");
             }
+            else{
+                executeCommand(option);
+            }
+        }
+    }
+
+    private void executeCommand(String option){
+        try{
+            Optional.ofNullable(commands.get(option))
+                    .ifPresentOrElse(Runnable::run ,  () -> System.out.println("Invalid option"));
+        }catch(ValidationException | ServiceException | RepositoryException | EmptyListException e){
+            System.out.println("Error :" + e.getMessage());
+        }catch (NumberFormatException e){
+            System.out.println("Input error : please enter a valid numeric id");
         }
     }
 
@@ -95,9 +103,7 @@ public class ConsoleUi {
 
     private void handleShowUsers(){
         System.out.println("\nUsers list : ");
-        for(User u : userService.findAll()){
-            System.out.println(u);
-        }
+        userService.findAll().forEach(System.out::println);
     }
 
     private void handleAddFriendship(){
@@ -125,9 +131,7 @@ public class ConsoleUi {
 
     private void handleShowFriendships(){
         System.out.println("\nFriendship list : ");
-        for(Friendship f : friendshipService.findAll()){
-            System.out.println(f);
-        }
+        friendshipService.findAll().forEach(System.out::println);
     }
 
     private void handleShowNrOfCommunities(){
@@ -135,8 +139,6 @@ public class ConsoleUi {
     }
 
     private void handleShowMostSocialCommunity(){
-        for(User u : networkService.getMostPopularCommunity()){
-            System.out.println(u);
-        }
+        networkService.getMostPopularCommunity().forEach(System.out::println);
     }
 }
