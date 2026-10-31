@@ -1,11 +1,18 @@
 package com.lab.service;
 
 import com.lab.domain.Friendship;
+import com.lab.domain.FriendshipCriteria;
 import com.lab.domain.Tuple;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
 import com.lab.repository.Repository;
+
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -56,5 +63,47 @@ public class FriendshipService {
             throw new EmptyListException("There are no friendships added ");
         }
         return friendships;
+    }
+
+    /**
+     * Retrieves the friendships that satisfy the given condition.
+     * Unlike {@link #findAll()}, it does not throw if the result is empty.
+     *
+     * @param filter the condition a friendship must satisfy to be included
+     * @return a list with the matching friendships, possibly empty
+     */
+    public List<Friendship> findAll(Predicate<Friendship> filter){
+        return friendRepository.findAll(filter);
+    }
+
+    /**
+     * Returns a new stream over all friendships, for further processing by other services.
+     * Unlike {@link #findAll()}, it does not throw if there are no friendships.
+     *
+     * @return a new stream of all friendships, possibly empty; it can be consumed only once
+     */
+    public Stream<Friendship> stream(){
+        return friendRepository.stream();
+    }
+
+    private Long otherUser(Friendship friendship , Long userId){
+        Tuple<Long,Long> id = friendship.getId();
+        if(id.getLeft().equals(userId)) {
+            return id.getRight();
+        }else{
+            return id.getLeft();
+        }
+    }
+
+    /**
+     * Returns the identifiers of all friends of the given user.
+     *
+     * @param userId the identifier of the user
+     * @return the set of ids of the users who are friends with {@code userId}, possibly empty
+     */
+    public Set<Long> getFriendsId(Long userId){
+        return findAll(FriendshipCriteria.involves(userId)).stream()
+                .map(friendship -> otherUser(friendship , userId))
+                .collect(Collectors.toSet());
     }
 }

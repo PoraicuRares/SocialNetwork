@@ -109,10 +109,22 @@ public class RepositoryFactory {
                 .orElseThrow(() -> new RepositoryException("Unknown repository type provided"));
     }
 
+    /**
+     * Creates a user repository based on the configured persistence type.
+     * @param validator the validator used for user entities
+     * @return a concrete implementation of {@link Repository} for users
+     * @throws RepositoryException if the repository type is unknown or configuration fails
+     */
     public Repository<Long ,User> createUserRepository(Validator<User> validator){
         return create(userRepositoryCreators ,validator);
     }
 
+    /**
+     * Creates a friendship repository based on the configured persistence type.
+     * @param validator the validator used for friendship entities
+     * @return a concrete implementation of {@link Repository} for friendships
+     * @throws RepositoryException if the repository type is unknown or configuration fails
+     */
     public Repository<Tuple<Long,Long> , Friendship> createFriendshipRepository(Validator<Friendship> validator){
         return create(friendshipRepositoryCreators , validator);
     }

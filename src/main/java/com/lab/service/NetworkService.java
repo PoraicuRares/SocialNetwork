@@ -1,16 +1,13 @@
 package com.lab.service;
 
-import com.lab.domain.Friendship;
-import com.lab.domain.Tuple;
-import com.lab.domain.User;
+import com.lab.domain.*;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -26,98 +23,84 @@ public class NetworkService {
         this.userService = userService;
     }
 
-    private Map<Long, List<Long>> buildGraph(){
-        Map<Long , List<Long>> adj = new HashMap<>();
-        for(User users : userService.findAll()){
-            adj.put(users.getId() ,new ArrayList<>());
-        }
-
-        for(Friendship friendship : friendshipService.findAll()){
-            Long id1 = friendship.getId().getLeft();
-            Long id2 =friendship.getId().getRight();
-            adj.get(id1).add(id2);
-            adj.get(id2).add(id1);
-        }
-        return adj;
+    private Map<Long, Set<Long>> buildGraph(){
+        return userService.stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        user -> friendshipService.getFriendsId(user.getId())));
     }
 
-    private void dfs(long node  , Map<Long , List<Long>> adj , Map<Long , Boolean> visited , List<Long> component){
+    private Set<Long> neighbors(Long node , Map<Long ,Set<Long>> graph){
+        return graph.getOrDefault(node , Set.of());
+    }
+
+    private void visit(Long node, Map<Long , Set<Long>> graph ,Set<Long> component){
         component.add(node);
-        visited.put(node , true);
-        for(long neighbor : adj.get(node)){
-            if(!visited.containsKey(neighbor)){
-                dfs(neighbor , adj , visited , component);
-            }
-        }
+        neighbors(node , graph).stream()
+                .filter(neighbor ->  !component.contains(neighbor))
+                .forEach(neighbor -> visit(neighbor , graph ,component));
+    }
+
+    private Set<Long> componentOf(Long start , Map<Long ,Set<Long>> graph){
+        Set<Long> component =  new HashSet<>();
+        visit(start , graph , component);
+        return component;
+    }
+
+    private Stream<Set<Long>> communities(Map<Long ,Set<Long>> graph){
+        return graph.keySet().stream()
+                .map(id ->  componentOf(id , graph))
+                .distinct();
     }
 
     /**
-     * Determines the total number of connected components (communities) in the social network
-     * @return the integer number of communities
+     * Determines the total number of connected components (communities) in the social network.
+     * A user without friends forms a community on their own.
+     *
+     * @return the number of communities, 0 if there are no users
      */
     public int getNumberOfCommunities(){
-        Map<Long , List<Long>> adj = buildGraph();
-        Map<Long , Boolean> visited = new HashMap<>();
-        int nrOfCommunities = 0;
-        for(User users : userService.findAll()){
-            if(!visited.containsKey(users.getId())){
-                dfs(users.getId(), adj , visited , new ArrayList<>());
-                nrOfCommunities++;
-            }
-        }
-        return nrOfCommunities;
+        return (int) communities(buildGraph()).count();
     }
 
-    private int findLongestPath(long node , Map<Long , List<Long>> adj , Map<Long , Boolean> visited){
-       visited.put(node , true);
-       int mx = 0 ;
-        for(Long neighbor : adj.get(node)){
-            if(!visited.containsKey(neighbor)){
-                int local = findLongestPath( neighbor ,adj , visited);
-                mx = Math.max(mx , local);
-            }
-        }
-        visited.remove(node);
-        return 1+ mx;
+    private Set<Long> extend(Set<Long> path , Long node){
+        Set<Long> newPath = new HashSet<>(path);
+        newPath.add(node);
+        return newPath;
     }
 
+    private int longestPathFrom(Long node , Map<Long , Set<Long>> graph , Set<Long> path){
+        return 1 + neighbors(node , graph).stream()
+                .filter(neighbor -> !path.contains(neighbor))
+                .mapToInt(neighbor -> longestPathFrom(neighbor , graph ,extend(path , neighbor)))
+                .max()
+                .orElse(0);
+    }
 
-    private List<User> convertIdsToUsers(List<Long> ids){
-        List<User> users = new ArrayList<>();
-        for(Long id  : ids){
-            users.add(userService.findOne(id).orElseThrow());
-        }
-        return users;
+    private int longestPathIn(Set<Long> community ,Map<Long ,Set<Long>> graph){
+        return community.stream()
+                .mapToInt(node -> longestPathFrom(node ,graph ,Set.of(node)))
+                .max()
+                .orElse(0);
     }
 
     /**
      * Finds the most sociable community, defined as the connected component
      * containing the longest path in the graph
-     * @return a List of users belonging to the most sociable community
+     * @return the users of the most sociable community, sorted by id
      * @throws EmptyListException if there are no friendships in the network
      */
     public List<User> getMostPopularCommunity(){
-        if(!friendshipService.findAll().iterator().hasNext()){
+        if(friendshipService.stream().findAny().isEmpty())
             throw new EmptyListException("There are no friendships added");
-        }
-        List<Long> mostPopularCommunity = new ArrayList<>();
-        Map<Long , List<Long>> adj = buildGraph();
+        Map<Long, Set<Long>> graph = buildGraph();
+        Set<Long> mostSociable = communities(graph)
+                .max(Comparator.comparingInt(community -> longestPathIn(community , graph)))
+                .orElseThrow();
 
-        int mx = 0;
-        long node =  0;
-        for(User user : userService.findAll()){
-            Map<Long , Boolean> visited = new HashMap<>();
-            int local = findLongestPath(user.getId() ,adj, visited);
-            if(mx  < local){
-                mx = local;
-                node =  user.getId();
-            }
-        }
-        Map<Long , Boolean> visited = new HashMap<>();
-        dfs(node , adj , visited , mostPopularCommunity);
-
-
-        return convertIdsToUsers(mostPopularCommunity);
+        return userService.findAll(UserCriteria.hasIdIn(mostSociable)).stream()
+                .sorted(Comparator.comparing(User::getId))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -132,32 +115,15 @@ public class NetworkService {
         friendshipService.add(id1 , id2);
     }
 
-    private void deleteUserFriendships(Long userId){
-        Iterable<Friendship> friendships;
-        try{
-            friendships = friendshipService.findAll();
-        }catch(EmptyListException e){
-            return;
-        }
-
-        List<Tuple<Long,Long>> toDelete = new ArrayList<>();
-        for(Friendship friendship: friendships){
-            Tuple<Long , Long> id = friendship.getId();
-            if(id.getLeft().equals(userId)|| id.getRight().equals(userId))
-                toDelete.add(id);
-        }
-        for(Tuple<Long ,Long> id : toDelete){
-            friendshipService.remove(id);
-        }
-    }
-
     /**
      * Deletes a user and triggers a cascading deletion of all their friendships
      * @param userId the identifier of the user to delete
      * @throws RepositoryException if the user does not exist
      */
     public void deleteUser(Long userId){
-        deleteUserFriendships(userId);
+        friendshipService.findAll(FriendshipCriteria.involves(userId)).stream()
+                .map(Friendship::getId)
+                .forEach(friendshipService::remove);
         userService.remove(userId);
     }
 }

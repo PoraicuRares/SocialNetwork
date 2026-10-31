@@ -4,7 +4,14 @@ import com.lab.domain.User;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
-import com.lab.repository.Repository;import java.util.Optional;
+import com.lab.repository.Repository;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Service class responsible for managing user-related operations
@@ -14,15 +21,15 @@ public class UserService {
     private long lastId;
     public UserService(Repository<Long, User> userRepository) {
         this.userRepository = userRepository;
-        initializeLastId();
+        this.lastId = findMaxId();
     }
 
-    private void initializeLastId(){
-        for(User user :userRepository.findAll()){
-            if(user.getId() != null  && user.getId() > lastId){
-                lastId = user.getId();
-            }
-        }
+    private long findMaxId(){
+        return userRepository.stream()
+                .map(User::getId)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .orElse(0L);
     }
 
     /**
@@ -69,5 +76,24 @@ public class UserService {
             throw new EmptyListException("There are no users added");
         }
         return users;
+    }
+
+    /**
+     * Retrieves the users that satisfy the given condition.
+     * Unlike {@link #findAll()}, it does not throw if the result is empty.
+     * @param filter the condition a user must satisfy to be included
+     * @return a list with the matching users, possibly empty
+     */
+    public List<User> findAll(Predicate<User> filter){
+        return userRepository.findAll(filter);
+    }
+
+    /**
+     * Returns a new stream over all users, for further processing by other services.
+     * Unlike {@link #findAll()}, it does not throw if there are no users.
+     * @return a new stream of all users, possibly empty; it can be consumed only once
+     */
+    public Stream<User> stream(){
+        return userRepository.stream();
     }
 }
