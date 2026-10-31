@@ -66,7 +66,7 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
         try{
             Files.write(path  ,lines);
         }catch (IOException e){
-            throw  new RepositoryException("Error while reading the file " + path , e);
+            throw  new RepositoryException("Error while writing the file " + path , e);
         }
     }
 

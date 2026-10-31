@@ -12,7 +12,7 @@ public class UserValidator implements Validator<User> {
     public void validate(User entity) throws ValidationException {
         StringBuilder errors = new StringBuilder();
         if(entity.getId() == null) errors.append("Id must not be null");
-        if(entity.getId()  <= 0) errors.append("Id must be greater than zero");
+        else if(entity.getId()  <= 0) errors.append("Id must be greater than zero");
 
         if(entity.getFirstName() == null ) errors.append("First name must not be null");
         else if(entity.getFirstName().isBlank()) errors.append("First name must not be blank");
