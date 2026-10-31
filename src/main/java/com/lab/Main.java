@@ -32,7 +32,7 @@ void main(){
 
         ConsoleUi ui = new ConsoleUi(userService , friendshipService , networkService);
         ui.run();
-    }catch (RepositoryException | ValidationException | IllegalArgumentException e){
+    }catch (RepositoryException | ValidationException | IllegalArgumentException | UnsupportedOperationException e){
         System.out.println("Error at start of the app :  " + e);
     }
 

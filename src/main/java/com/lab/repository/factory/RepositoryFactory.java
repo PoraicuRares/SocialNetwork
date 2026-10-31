@@ -1,5 +1,6 @@
 package com.lab.repository.factory;
 
+import com.lab.domain.Entity;
 import com.lab.domain.Friendship;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
@@ -12,7 +13,10 @@ import com.lab.repository.file.FileRepository;import com.lab.repository.file.Lin
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * Factory class responsible for instantiating repository implementations
@@ -24,13 +28,14 @@ public class RepositoryFactory {
     private final Properties properties;
     private final RepositoryType repositoryType;
 
+    private final Map<RepositoryType, Function<Validator<User> , Repository<Long , User>>> userRepositoryCreators;
+    private final Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship> >> friendshipRepositoryCreators;
+
     private RepositoryFactory(String configFile){
         properties = loadProperties(configFile);
-        String value = properties.getProperty("repository.type");
-        if(value == null){
-            throw new IllegalArgumentException("The key repository.type is missing from the properties file");
-        }
-        repositoryType = RepositoryType.valueOf(value.trim().toUpperCase());
+        repositoryType = readRepositoryType();
+        userRepositoryCreators = buildUserRepositoryCreators();
+        friendshipRepositoryCreators = buildFriendshipRepositoryCreators();
     }
 
     /**
@@ -65,57 +70,51 @@ public class RepositoryFactory {
         return value;
     }
 
-    /**
-     * Creates a user repository based on the configured persistence type.
-     *
-     * @param validator the validator used for user entities
-     * @return a concrete implementation of {@link Repository} for users
-     * @throws RepositoryException if the repository type is unknown or configuration fails
-     */
-    public Repository<Long,User> createUserRepository(Validator<User> validator){
-        switch (repositoryType){
-            case MEMORY :
-                return new InMemoryRepository<>(validator);
-
-            case FILE:
-                String file = getRequiredProperty("repository.file.users");
-                return new FileRepository<>(validator , file , LineConverters::parseUser , LineConverters::formatUser);
-
-            case DATABASE:
-                String dbUrl = getRequiredProperty("db.url");
-                String dbUser = getRequiredProperty("db.user");
-                String dbPassword = getRequiredProperty("db.password");
-                return new UserDBRepository(validator,dbUrl,dbUser,dbPassword);
-
-            default:
-                throw new RepositoryException("Unknown repository type provided");
+    private RepositoryType readRepositoryType(){
+        String value = properties.getProperty("repository.type");
+        if(value == null){
+            throw new IllegalArgumentException("The key repository.type is missing from the properties file");
         }
+        return RepositoryType.valueOf(value.trim().toUpperCase());
     }
 
-    /**
-     * Creates a friendship repository based on the configured persistence type.
-     *
-     * @param validator the validator used for friendship entities
-     * @return a concrete implementation of {@link Repository} for friendships
-     * @throws RepositoryException if the repository type is unknown or configuration fails
-     */
-    public Repository<Tuple<Long,Long>, Friendship> createFriendshipRepository(Validator<Friendship> validator){
-        switch (repositoryType){
-            case MEMORY :
-                return new InMemoryRepository<>(validator);
+    private Map<RepositoryType, Function<Validator<User> , Repository<Long , User>>> buildUserRepositoryCreators(){
+        return Map.of(
+                RepositoryType.MEMORY ,InMemoryRepository::new,
+                RepositoryType.FILE , validator -> new FileRepository<>(validator,
+                        getRequiredProperty("repository.file.users") ,
+                        LineConverters::parseUser , LineConverters::formatUser),
+                RepositoryType.DATABASE , validator -> new UserDBRepository(validator,
+                        getRequiredProperty("db.url") ,getRequiredProperty("db.user") , getRequiredProperty("db.password"))
 
-            case FILE:
-                String file = getRequiredProperty("repository.file.friendships");
-                return new FileRepository<>(validator , file , LineConverters::parseFriendship , LineConverters::formatFriendship);
-
-            case DATABASE:
-                String dbUrl = getRequiredProperty("db.url");
-                String dbUser = getRequiredProperty("db.user");
-                String dbPassword = getRequiredProperty("db.password");
-                return new FriendshipDBRepository(validator,dbUrl,dbUser,dbPassword);
-
-            default:
-                throw new RepositoryException("Unknown repository type provided");
-        }
+        );
     }
+
+    private Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship>>> buildFriendshipRepositoryCreators(){
+        return Map.of(
+                RepositoryType.MEMORY , InMemoryRepository::new ,
+                RepositoryType.FILE , validator-> new FileRepository<>(validator,
+                        getRequiredProperty("repository.file.friendships"),
+                        LineConverters::parseFriendship , LineConverters::formatFriendship),
+                RepositoryType.DATABASE , validator -> new FriendshipDBRepository(validator,
+                        getRequiredProperty("db.url") , getRequiredProperty("db.user") , getRequiredProperty("db.password"))
+        );
+    }
+
+    private <ID,E extends Entity<ID>> Repository<ID ,E> create(
+            Map<RepositoryType , Function<Validator<E> , Repository<ID , E>>> creators,
+            Validator<E> validator){
+        return Optional.ofNullable(creators.get(repositoryType))
+                .map(creator -> creator.apply(validator))
+                .orElseThrow(() -> new RepositoryException("Unknown repository type provided"));
+    }
+
+    public Repository<Long ,User> createUserRepository(Validator<User> validator){
+        return create(userRepositoryCreators ,validator);
+    }
+
+    public Repository<Tuple<Long,Long> , Friendship> createFriendshipRepository(Validator<Friendship> validator){
+        return create(friendshipRepositoryCreators , validator);
+    }
+
 }

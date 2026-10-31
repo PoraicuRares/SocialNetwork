@@ -14,6 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/**
+ * Generic file-based repository. The conversion between text lines and entities
+ * is received through the constructor as two functions (composition instead of inheritance),
+ * so a single class serves every entity type.
+ *
+ * @param <ID> the type of the entity's identifier
+ * @param <E>  the type of the entity, which must extend {@link Entity}
+ */
 public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository<ID , E> {
     private final Path path;
     private final Function<String , E> lineToEntity;
