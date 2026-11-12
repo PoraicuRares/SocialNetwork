@@ -5,6 +5,7 @@ import com.lab.domain.Friendship;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.RepositoryException;
+import com.lab.repository.IdGenerators;
 import com.lab.repository.InMemoryRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.db.FriendshipDBRepository;
@@ -80,8 +81,12 @@ public class RepositoryFactory {
 
     private Map<RepositoryType, Function<Validator<User> , Repository<Long , User>>> buildUserRepositoryCreators(){
         return Map.of(
-                RepositoryType.MEMORY ,InMemoryRepository::new,
+                RepositoryType.MEMORY ,validator-> new InMemoryRepository<>(
+                        validator,
+                        IdGenerators::nextLong
+                ),
                 RepositoryType.FILE , validator -> new FileRepository<>(validator,
+                        IdGenerators::nextLong,
                         getRequiredProperty("repository.file.users") ,
                         LineConverters::parseUser , LineConverters::formatUser),
                 RepositoryType.DATABASE , validator -> new UserDBRepository(validator,
@@ -92,7 +97,7 @@ public class RepositoryFactory {
 
     private Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship>>> buildFriendshipRepositoryCreators(){
         return Map.of(
-                RepositoryType.MEMORY , InMemoryRepository::new ,
+                RepositoryType.MEMORY ,  InMemoryRepository::new,
                 RepositoryType.FILE , validator-> new FileRepository<>(validator,
                         getRequiredProperty("repository.file.friendships"),
                         LineConverters::parseFriendship , LineConverters::formatFriendship),

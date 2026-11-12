@@ -4,8 +4,10 @@ import com.lab.domain.Entity;
 import com.lab.exceptions.RepositoryException;
 import com.lab.validator.Validator;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * In-memory implementation of the Repository interface
@@ -16,26 +18,47 @@ import java.util.Map;import java.util.Optional;
 public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository<ID , E>{
     private final Map<ID , E> entities = new HashMap<>();
     private final Validator<E> validator;
+    private final Function<Collection<ID>, ID> idGenerator;
+
 
     public InMemoryRepository(Validator<E> validator) {
+        this(validator , null);
+    }
+
+    public InMemoryRepository(Validator<E> validator, Function<Collection<ID>, ID> idGenerator) {
         this.validator = validator;
+        this.idGenerator = idGenerator;
     }
 
+
     @Override
-    public void save(E entity) {
+    public Optional<E> save(E entity) {
+        requireNonNull(entity , "The entity");
         validator.validate(entity);
-        if(entities.containsKey(entity.getId())){
-            throw new RepositoryException("An entity with the same id already exists!");
+        if(entity.getId() == null){
+            if(idGenerator == null ){
+                throw new IllegalArgumentException("The entity must have an id");
+            }
+            entity.setId(idGenerator.apply(entities.keySet()));
         }
-        entities.put(entity.getId() ,entity);
+        return Optional.ofNullable(entities.putIfAbsent(entity.getId(),entity))
+                .map(existing->entity);
     }
 
     @Override
-    public void delete(ID id) {
-        if(!entities.containsKey(id)){
-            throw new RepositoryException("An entity with this id does not exist!");
-        }
-        entities.remove(id);
+    public Optional<E> delete(ID id) {
+        requireNonNull(id, "The id");
+        return Optional.ofNullable(entities.remove(id));
+    }
+
+    @Override
+    public Optional<E> update(E entity) {
+        requireNonNull(entity, "The entity");
+        requireNonNull(entity.getId() ,"The id");
+        validator.validate(entity);
+        return entities.replace(entity.getId(), entity) ==  null
+                ? Optional.of(entity)
+                : Optional.empty();
     }
 
     @Override
@@ -45,6 +68,13 @@ public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository
 
     @Override
     public Optional<E> findOne(ID id) {
+        requireNonNull(id , "The id");
         return Optional.ofNullable(entities.get(id));
+    }
+
+    private static void requireNonNull(Object value, String what){
+        if(value == null){
+            throw new IllegalArgumentException(what + " must not be null");
+        }
     }
 }

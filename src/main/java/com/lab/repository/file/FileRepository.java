@@ -8,7 +8,9 @@ import com.lab.validator.Validator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,13 +29,23 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
     private final Function<String , E> lineToEntity;
     private final Function<E, String> entityToLine;
 
+
     public FileRepository(Validator<E> validator, String fileName, Function<String, E> lineToEntity, Function<E, String> entityToLine) {
-        super(validator);
+        super(validator , null);
         this.path = Path.of(fileName);
         this.lineToEntity = lineToEntity;
         this.entityToLine = entityToLine;
         loadData();
     }
+
+    public FileRepository(Validator<E> validator, Function<Collection<ID>, ID> idGenerator, String fileName, Function<String, E> lineToEntity, Function<E, String> entityToLine) {
+        super(validator, idGenerator);
+        this.path = Path.of(fileName);
+        this.lineToEntity = lineToEntity;
+        this.entityToLine = entityToLine;
+        loadData();
+    }
+
 
     private void loadData(){
         if(Files.notExists(path)){
@@ -53,7 +65,10 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
 
     private void loadLine(String line , int lineNr){
         try{
-            super.save(lineToEntity.apply(line));
+            super.save(lineToEntity.apply(line))
+                    .ifPresent(duplicate->{
+                        throw new RepositoryException("Duplicate id " + duplicate.getId());
+                    });
         }catch (RuntimeException e){
             throw new RepositoryException("Error while reading the file " +path + " at line "  + lineNr, e);
         }
@@ -71,14 +86,29 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
     }
 
     @Override
-    public void save(E entity) {
-        super.save(entity);
-        writeToFile();
+    public Optional<E> save(E entity) {
+        Optional<E> result = super.save(entity);
+        if(result.isEmpty()){
+            writeToFile();
+        }
+        return result;
     }
 
     @Override
-    public void delete(ID id) {
-        super.delete(id);
-        writeToFile();
+    public Optional<E> delete(ID id) {
+        var result = super.delete(id);
+        if(result.isPresent()){
+            writeToFile();
+        }
+        return result;
+    }
+
+    @Override
+    public Optional<E> update(E entity) {
+        var result  = super.update(entity);
+        if(result.isEmpty()){
+            writeToFile();
+        }
+        return result;
     }
 }

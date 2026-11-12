@@ -16,27 +16,46 @@ import java.util.stream.StreamSupport;
  * @param <E> the type of the entity, which must extend {@link Entity}
  */
 public interface Repository<ID , E extends Entity<ID>> {
-
     /**
-     * Saves the given entity
+     * Saves the given entity. If the entity has no id, the storage generates one
+     * and sets it on the entity, so after a successful save {@code entity.getId()} is not null
      * @param entity the entity to be saved
+     * @return an empty {@link Optional} if the entity was saved,
+     *         or an {@link Optional} containing the entity if another entity with the same id already exists
+     * @throws IllegalArgumentException if {@code entity} is null
      * @throws ValidationException if the entity is not valid
-     * @throws RepositoryException if an entity with the same ID already exists
+     * @throws RepositoryException if the storage cannot be accessed
      */
-    void save(E entity);
+    Optional<E> save(E entity);
 
     /**
      * Removes the entity with the specified identifier
      * @param id the identifier of the entity to be removed
-     * @throws RepositoryException if an entity with the given ID does not exist
+     * @return an {@link Optional} containing the removed entity,
+     * or an empty {@link Optional} if no entity has the given id
+     * @throws IllegalArgumentException if {@code id} is null
+     * @throws RepositoryException if the storage cannot be accessed
      */
-    void delete(ID id);
+    Optional<E> delete(ID id);
+
+    /**
+     * Replaces the stored entity that has the same id as the given one
+     * @param entity the entity with the new values
+     * @return an empty {@link Optional} if the entity was updated,
+     * or an {@link Optional} containing the entity if no entity with its id exists
+     * @throws IllegalArgumentException if {@code entity} or its id is null
+     * @throws ValidationException if the entity is not valid
+     * @throws RepositoryException if the storage cannot be accessed
+     */
+    Optional<E> update(E entity);
 
     /**
      * Finds and returns an entity based on its identifier
      * @param id the identifier of the entity to search for
      * @return an {@link Optional} containing the found entity,
      * or an empty {@link Optional} if no entity has the given id
+     * @throws IllegalArgumentException if {@code id} is null
+     * @throws RepositoryException if the storage cannot be accessed
      */
     Optional<E> findOne(ID id);
 

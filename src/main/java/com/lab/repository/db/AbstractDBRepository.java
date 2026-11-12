@@ -35,12 +35,17 @@ public abstract class AbstractDBRepository<ID , E extends Entity<ID>> implements
     }
 
     @Override
-    public void delete(ID id) {
+    public Optional<E> delete(ID id) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
-    public void save(E entity) {
+    public Optional<E> save(E entity) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Optional<E> update(E entity) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

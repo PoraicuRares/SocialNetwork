@@ -5,6 +5,7 @@ import com.lab.domain.FriendshipCriteria;
 import com.lab.domain.Tuple;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
+import com.lab.exceptions.ServiceException;
 import com.lab.exceptions.ValidationException;
 import com.lab.repository.Repository;
 
@@ -33,12 +34,17 @@ public class FriendshipService {
      * Creates and saves a new friendship between two users
      * @param idUser1 the ID of the first user
      * @param idUser2 the ID of the second user
+     * @return {@link Friendship} saved
      * @throws ValidationException if the users are the same or IDs are null
-     * @throws RepositoryException if the friendship already exists
+     * @throws ServiceException if the friendship already exists
      */
-    public void add(Long idUser1 , Long idUser2){
+    public Friendship add(Long idUser1 , Long idUser2){
         Friendship friendship = new Friendship(idUser1 ,idUser2);
-        friendRepository.save(friendship);
+        friendRepository.save(friendship)
+                .ifPresent(existing->{
+                    throw new ServiceException("These users are already friends!");
+                });
+        return friendship;
     }
 
     /**
@@ -46,14 +52,12 @@ public class FriendshipService {
      * @param id a Tuple containing the IDs of the two friends
      * @throws RepositoryException if the friendship does not exist
      */
-    public void remove(Tuple<Long,Long> id){
+    public Friendship remove(Tuple<Long,Long> id){
         Long left = Math.min(id.getLeft(), id.getRight());
         Long right = Math.max(id.getLeft() , id.getRight());
         Tuple<Long,Long> normalizedId = new Tuple<>(left , right);
-
-        friendRepository.findOne(normalizedId)
-                .orElseThrow(() -> new RepositoryException("There is no friendship with this id"));
-        friendRepository.delete(normalizedId);
+        return friendRepository.delete(normalizedId)
+                .orElseThrow(() -> new ServiceException("There is no friendship with this id"));
     }
 
     /**
