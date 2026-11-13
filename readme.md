@@ -35,3 +35,21 @@ Although in standard architectures validation belongs to the Service, in this pr
 The current implementation uses **Simple Factory**. This slightly breaks the OCP principle because, if in the future we want to add XML persistence, we would have to modify the code in RepositoryFactory to add another `case XML` in the switch.
 
 If I had implemented **Abstract Factory**, I would have created an `IRepositoryFactory` interface and separate classes (FileFactory, DbFactory). That way, for XML I would simply create a new XmlFactory class, fully respecting OCP. I still chose Simple Factory because it is flexible enough for a small project, and the abstract version would add unnecessary complexity.
+
+## Deleting a user's friendships: ON DELETE CASCADE and explicit deletion
+
+The foreign keys use ON DELETE CASCADE, and NetworkService.deleteUser also deletes the
+friendships explicitly before deleting the user. The explicit deletion is required because the
+application must behave the same with MEMORY and FILE storage, which have no cascade. The
+CASCADE constraint is a safety net that keeps the database consistent when a user is deleted
+outside the application (for example from pgAdmin).
+
+## Id generation
+The storage generates user ids: PostgreSQL through GENERATED ALWAYS AS IDENTITY (read back with
+getGeneratedKeys), and the in-memory and file repositories through an id generator function
+(greatest id + 1) received in the constructor. UserService no longer assigns ids.
+
+## Repository contract
+save returns an empty Optional on success and the entity if one with the same id exists;
+update returns the entity if no row was changed (executeUpdate() == 0); delete returns the
+deleted entity. This follows the semantics of Map.putIfAbsent, replace and remove.

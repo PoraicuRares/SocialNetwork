@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 /**
- * Skeleton database repository implementation for {@link Friendship} entities
+ * Database repository implementation for {@link Friendship} entities
  * Extends {@link AbstractDBRepository} and prepares the environment for JDBC persistence
  */
 public class FriendshipDBRepository extends AbstractDBRepository<Tuple<Long,Long> , Friendship> {

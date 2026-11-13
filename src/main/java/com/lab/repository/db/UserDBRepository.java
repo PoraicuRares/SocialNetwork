@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Skeleton database repository implementation for {@link User} entities
+ * Database repository implementation for {@link User} entities
  * Extends {@link AbstractDBRepository} and prepares the environment for JDBC persistence
  */
 public class UserDBRepository extends AbstractDBRepository<Long , User> {

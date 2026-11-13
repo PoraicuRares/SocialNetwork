@@ -88,8 +88,8 @@ public class ConsoleUi {
         System.out.print("Enter last name: ");
         String lastName = scanner.nextLine().trim();
 
-        userService.add(new User(firstName,lastName));
-        System.out.println("User successfully added ");
+        User saved = userService.add(new User(firstName,lastName));
+        System.out.println("User successfully added with id : " + saved.getId());
     }
 
     private void handleRemoveUser(){
