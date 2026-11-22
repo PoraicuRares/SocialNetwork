@@ -4,14 +4,17 @@ import java.util.Objects;
 
 /**
  * Base class for all entities in the application
+ *
  * @param <ID> the type of the entity's unique identifier
  */
-public abstract class  Entity<ID>{
+public abstract class Entity<ID> {
     private ID id;
-    public ID getId(){
+
+    public ID getId() {
         return this.id;
     }
-    public void setId(ID id){
+
+    public void setId(ID id) {
         this.id = id;
     }
 

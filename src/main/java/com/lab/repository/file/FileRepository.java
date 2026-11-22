@@ -24,14 +24,14 @@ import java.util.stream.Stream;
  * @param <ID> the type of the entity's identifier
  * @param <E>  the type of the entity, which must extend {@link Entity}
  */
-public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository<ID , E> {
+public class FileRepository<ID, E extends Entity<ID>> extends InMemoryRepository<ID, E> {
     private final Path path;
-    private final Function<String , E> lineToEntity;
+    private final Function<String, E> lineToEntity;
     private final Function<E, String> entityToLine;
 
 
     public FileRepository(Validator<E> validator, String fileName, Function<String, E> lineToEntity, Function<E, String> entityToLine) {
-        super(validator , null);
+        super(validator, null);
         this.path = Path.of(fileName);
         this.lineToEntity = lineToEntity;
         this.entityToLine = entityToLine;
@@ -47,48 +47,48 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
     }
 
 
-    private void loadData(){
-        if(Files.notExists(path)){
+    private void loadData() {
+        if (Files.notExists(path)) {
             return;
         }
         List<String> lines;
-        try(Stream<String> fileLines = Files.lines(path)){
+        try (Stream<String> fileLines = Files.lines(path)) {
             lines = fileLines.collect(Collectors.toList());
-        }catch (IOException e){
-            throw new RepositoryException("Error while reading the file " + path , e);
+        } catch (IOException e) {
+            throw new RepositoryException("Error while reading the file " + path, e);
         }
-        IntStream.range(0 , lines.size())
+        IntStream.range(0, lines.size())
                 .filter(i -> !lines.get(i).isBlank())
-                .forEach(i -> loadLine(lines.get(i) , i + 1));
+                .forEach(i -> loadLine(lines.get(i), i + 1));
 
     }
 
-    private void loadLine(String line , int lineNr){
-        try{
+    private void loadLine(String line, int lineNr) {
+        try {
             super.save(lineToEntity.apply(line))
-                    .ifPresent(duplicate->{
+                    .ifPresent(duplicate -> {
                         throw new RepositoryException("Duplicate id " + duplicate.getId());
                     });
-        }catch (RuntimeException e){
-            throw new RepositoryException("Error while reading the file " +path + " at line "  + lineNr, e);
+        } catch (RuntimeException e) {
+            throw new RepositoryException("Error while reading the file " + path + " at line " + lineNr, e);
         }
     }
 
-    private void writeToFile(){
+    private void writeToFile() {
         List<String> lines = stream()
                 .map(entityToLine)
                 .collect(Collectors.toList());
-        try{
-            Files.write(path  ,lines);
-        }catch (IOException e){
-            throw  new RepositoryException("Error while writing the file " + path , e);
+        try {
+            Files.write(path, lines);
+        } catch (IOException e) {
+            throw new RepositoryException("Error while writing the file " + path, e);
         }
     }
 
     @Override
     public Optional<E> save(E entity) {
         Optional<E> result = super.save(entity);
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             writeToFile();
         }
         return result;
@@ -97,7 +97,7 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
     @Override
     public Optional<E> delete(ID id) {
         var result = super.delete(id);
-        if(result.isPresent()){
+        if (result.isPresent()) {
             writeToFile();
         }
         return result;
@@ -105,8 +105,8 @@ public class FileRepository<ID ,E extends Entity<ID>> extends InMemoryRepository
 
     @Override
     public Optional<E> update(E entity) {
-        var result  = super.update(entity);
-        if(result.isEmpty()){
+        var result = super.update(entity);
+        if (result.isEmpty()) {
             writeToFile();
         }
         return result;

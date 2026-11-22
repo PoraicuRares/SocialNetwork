@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Represents a relationship between two users in the social network
  */
-public class Friendship extends Entity<Tuple<Long ,Long>> {
+public class Friendship extends Entity<Tuple<Long, Long>> {
     private LocalDateTime date;
 
     public Friendship() {
@@ -15,9 +15,9 @@ public class Friendship extends Entity<Tuple<Long ,Long>> {
     }
 
     public Friendship(Long idFriend1, Long idFriend2) {
-        Long left = Math.min(idFriend1 , idFriend2);
-        Long right = Math.max(idFriend1 , idFriend2);
-        this.setId(new Tuple<>(left , right));
+        Long left = Math.min(idFriend1, idFriend2);
+        Long right = Math.max(idFriend1, idFriend2);
+        this.setId(new Tuple<>(left, right));
         this.date = LocalDateTime.now();
     }
 

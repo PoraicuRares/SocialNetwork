@@ -26,10 +26,10 @@ import java.util.stream.Stream;
  * Service class responsible for managing friendship relations between users
  */
 public class FriendshipService {
-    private final Repository<Tuple<Long , Long>, Friendship> friendRepository;
+    private final Repository<Tuple<Long, Long>, Friendship> friendRepository;
     private static final Comparator<Friendship> BY_USERS_IDS =
             Comparator.comparing((Friendship f) -> f.getId().getLeft())
-                    .thenComparing(f ->f.getId().getRight());
+                    .thenComparing(f -> f.getId().getRight());
 
     public FriendshipService(Repository<Tuple<Long, Long>, Friendship> friendRepository) {
         this.friendRepository = friendRepository;
@@ -37,16 +37,17 @@ public class FriendshipService {
 
     /**
      * Creates and saves a new friendship between two users
+     *
      * @param idUser1 the ID of the first user
      * @param idUser2 the ID of the second user
      * @return {@link Friendship} saved
      * @throws ValidationException if the users are the same or IDs are null
-     * @throws ServiceException if the friendship already exists
+     * @throws ServiceException    if the friendship already exists
      */
-    public Friendship add(Long idUser1 , Long idUser2){
-        Friendship friendship = new Friendship(idUser1 ,idUser2);
+    public Friendship add(Long idUser1, Long idUser2) {
+        Friendship friendship = new Friendship(idUser1, idUser2);
         friendRepository.save(friendship)
-                .ifPresent(existing->{
+                .ifPresent(existing -> {
                     throw new ServiceException("These users are already friends!");
                 });
         return friendship;
@@ -54,27 +55,29 @@ public class FriendshipService {
 
     /**
      * Removes an existing friendship from the network
+     *
      * @param id a Tuple containing the IDs of the two friends
      * @throws RepositoryException if the friendship does not exist
      */
-    public Friendship remove(Tuple<Long,Long> id){
+    public Friendship remove(Tuple<Long, Long> id) {
         Long left = Math.min(id.getLeft(), id.getRight());
-        Long right = Math.max(id.getLeft() , id.getRight());
-        Tuple<Long,Long> normalizedId = new Tuple<>(left , right);
+        Long right = Math.max(id.getLeft(), id.getRight());
+        Tuple<Long, Long> normalizedId = new Tuple<>(left, right);
         return friendRepository.delete(normalizedId)
                 .orElseThrow(() -> new ServiceException("There is no friendship with this id"));
     }
 
     /**
      * Retrieves all users currently registered in the network, sorted by id
+     *
      * @return a list containing all users, sorted by id
      * @throws EmptyListException if there are no users in the network
      */
-    public List<Friendship> findAll(){
+    public List<Friendship> findAll() {
         List<Friendship> friendships = friendRepository.stream()
                 .sorted(BY_USERS_IDS)
                 .collect(Collectors.toList());
-        if (friendships.isEmpty()){
+        if (friendships.isEmpty()) {
             throw new EmptyListException("There are no friendships added ");
         }
         return friendships;
@@ -83,10 +86,11 @@ public class FriendshipService {
     /**
      * Retrieves the friendships that satisfy the given condition.
      * Unlike {@link #findAll()}, it does not throw if the result is empty.
+     *
      * @param filter the condition a friendship must satisfy to be included
      * @return a list with the matching friendships, possibly empty
      */
-    public List<Friendship> findAll(Predicate<Friendship> filter){
+    public List<Friendship> findAll(Predicate<Friendship> filter) {
         return friendRepository.findAll(filter);
     }
 
@@ -96,15 +100,15 @@ public class FriendshipService {
      *
      * @return a new stream of all friendships, possibly empty; it can be consumed only once
      */
-    public Stream<Friendship> stream(){
+    public Stream<Friendship> stream() {
         return friendRepository.stream();
     }
 
-    private Long otherUser(Friendship friendship , Long userId){
-        Tuple<Long,Long> id = friendship.getId();
-        if(id.getLeft().equals(userId)) {
+    private Long otherUser(Friendship friendship, Long userId) {
+        Tuple<Long, Long> id = friendship.getId();
+        if (id.getLeft().equals(userId)) {
             return id.getRight();
-        }else{
+        } else {
             return id.getLeft();
         }
     }
@@ -115,23 +119,24 @@ public class FriendshipService {
      * @param userId the identifier of the user
      * @return the set of ids of the users who are friends with {@code userId}, possibly empty
      */
-    public Set<Long> getFriendsId(Long userId){
+    public Set<Long> getFriendsId(Long userId) {
         return findAll(FriendshipCriteria.involves(userId)).stream()
-                .map(friendship -> otherUser(friendship , userId))
+                .map(friendship -> otherUser(friendship, userId))
                 .collect(Collectors.toSet());
     }
 
     /**
      * Lists the friends of a user on pages directly in the storage, if the storage supports it
      * (the database does it with a single SELECT and a JOIN)
+     *
      * @param userId   the id of the user
      * @param pageable the page number and the page size
      * @return the page of friends, or an empty {@link Optional} if the storage cannot list friends on pages
      * @throws RepositoryException if the storage cannot be accessed
      */
-    public Optional<Page<User>> findFriendsOnPageInStorage(Long userId , Pageable pageable){
-        if(friendRepository instanceof FriendshipPagingRepository paging){
-            return Optional.of(paging.findFriendsOnPage(userId , pageable));
+    public Optional<Page<User>> findFriendsOnPageInStorage(Long userId, Pageable pageable) {
+        if (friendRepository instanceof FriendshipPagingRepository paging) {
+            return Optional.of(paging.findFriendsOnPage(userId, pageable));
         }
         return Optional.empty();
     }

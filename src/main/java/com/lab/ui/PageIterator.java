@@ -20,14 +20,15 @@ public class PageIterator {
 
     /**
      * Shows the pages of a list until the user chooses to exit.
-     * @param loadPage     receives the page number and the page size and returns that page
-     * @param <T>          the type of the elements in the list
+     *
+     * @param loadPage receives the page number and the page size and returns that page
+     * @param <T>      the type of the elements in the list
      */
-    public <T> void browse(BiFunction<Integer, Integer , Page<T>> loadPage){
+    public <T> void browse(BiFunction<Integer, Integer, Page<T>> loadPage) {
         int pageNumber = 0;
-        while(true){
-            Page<T> page = loadPage.apply(pageNumber , pageSize);
-            if(page.totalNumberOfElements() == 0){
+        while (true) {
+            Page<T> page = loadPage.apply(pageNumber, pageSize);
+            if (page.totalNumberOfElements() == 0) {
                 System.out.println("There are no entities");
                 return;
             }
@@ -35,31 +36,28 @@ public class PageIterator {
             int totalPages = (page.totalNumberOfElements() - 1) / pageSize + 1;
 
             System.out.println("Page " + (pageNumber + 1) + "/" + totalPages + ":");
-            page.elementsOnPage().forEach(u ->System.out.println(" " + u));
+            page.elementsOnPage().forEach(u -> System.out.println(" " + u));
             System.out.println("[n]ext , [p]revious , [e]xit : ");
 
-            switch (scanner.nextLine().trim().toLowerCase()){
+            switch (scanner.nextLine().trim().toLowerCase()) {
                 case "n" -> {
-                    if(pageNumber == totalPages - 1){
+                    if (pageNumber == totalPages - 1) {
                         System.out.println("This is the last page");
-                    }
-                    else{
+                    } else {
                         pageNumber++;
                     }
                 }
                 case "p" -> {
-                    if(pageNumber == 0){
+                    if (pageNumber == 0) {
                         System.out.println("This is the first page");
-                    }
-                    else{
+                    } else {
                         pageNumber--;
                     }
                 }
                 case "e" -> {
                     return;
                 }
-                default ->
-                        System.out.println("Invalid option");
+                default -> System.out.println("Invalid option");
             }
         }
     }

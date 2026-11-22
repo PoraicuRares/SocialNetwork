@@ -4,10 +4,11 @@ import java.util.Objects;
 
 /**
  * A generic pair of two elements, used primarily to represent composite identifiers
+ *
  * @param <E1> the type of the first element
  * @param <E2> the type of the second element
  */
-public class Tuple<E1 ,E2> {
+public class Tuple<E1, E2> {
     private final E1 left;
     private final E2 right;
 

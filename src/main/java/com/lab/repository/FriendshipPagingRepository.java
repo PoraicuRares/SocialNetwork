@@ -17,5 +17,5 @@ public interface FriendshipPagingRepository {
      * @return the friends on the page and the total number of friends; an empty page if it is after the last one
      * @throws RepositoryException if the storage cannot be accessed
      */
-    Page<User> findFriendsOnPage(Long userId , Pageable pageable);
+    Page<User> findFriendsOnPage(Long userId, Pageable pageable);
 }

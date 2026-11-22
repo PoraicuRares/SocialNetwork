@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  * {@code and}, {@code or}, {@code negate} or {@code Predicate.not}.
  */
 public class UserCriteria {
-    private UserCriteria(){
+    private UserCriteria() {
 
     }
 
@@ -20,7 +20,7 @@ public class UserCriteria {
      * @param ids the set of accepted identifiers
      * @return a predicate that is true for users whose id is contained in {@code ids}
      */
-    public static Predicate<User> hasIdIn(Set<Long> ids){
+    public static Predicate<User> hasIdIn(Set<Long> ids) {
         return u -> ids.contains(u.getId());
     }
 
@@ -30,7 +30,7 @@ public class UserCriteria {
      * @param prefix the expected beginning of the first name
      * @return a predicate that is true for users whose first name starts with {@code prefix}
      */
-    public static Predicate<User> firstNameStartsWith(String prefix){
+    public static Predicate<User> firstNameStartsWith(String prefix) {
         return u -> u.getFirstName().startsWith(prefix);
     }
 
@@ -40,7 +40,7 @@ public class UserCriteria {
      * @param lastName the expected last name
      * @return a predicate that is true for users with this last name
      */
-    public static Predicate<User> hasLastName(String lastName){
+    public static Predicate<User> hasLastName(String lastName) {
         return u -> u.getLastName().equals(lastName);
     }
 }

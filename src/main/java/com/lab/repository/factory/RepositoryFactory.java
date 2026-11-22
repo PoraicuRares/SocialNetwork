@@ -10,7 +10,9 @@ import com.lab.repository.PagingRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.db.FriendshipDBRepository;
 import com.lab.repository.db.UserDBRepository;
-import com.lab.repository.file.FileRepository;import com.lab.repository.file.LineConverters;import com.lab.validator.Validator;
+import com.lab.repository.file.FileRepository;
+import com.lab.repository.file.LineConverters;
+import com.lab.validator.Validator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,10 +31,10 @@ public class RepositoryFactory {
     private final Properties properties;
     private final RepositoryType repositoryType;
 
-    private final Map<RepositoryType, Function<Validator<User> , PagingRepository<Long , User>>> userRepositoryCreators;
-    private final Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship> >> friendshipRepositoryCreators;
+    private final Map<RepositoryType, Function<Validator<User>, PagingRepository<Long, User>>> userRepositoryCreators;
+    private final Map<RepositoryType, Function<Validator<Friendship>, Repository<Tuple<Long, Long>, Friendship>>> friendshipRepositoryCreators;
 
-    private RepositoryFactory(String configFile){
+    private RepositoryFactory(String configFile) {
         properties = loadProperties(configFile);
         repositoryType = readRepositoryType();
         userRepositoryCreators = buildUserRepositoryCreators();
@@ -41,74 +43,75 @@ public class RepositoryFactory {
 
     /**
      * Returns the Singleton RepositoryFactory instance
+     *
      * @param configFile configuration file name
      * @return the instance of RepositoryFactory
      */
-    public static RepositoryFactory getInstance(String configFile){
-        if(instance == null)
+    public static RepositoryFactory getInstance(String configFile) {
+        if (instance == null)
             instance = new RepositoryFactory(configFile);
         return instance;
     }
 
-    private Properties loadProperties(String resource){
+    private Properties loadProperties(String resource) {
         Properties prop = new Properties();
-        try(InputStream in = getClass().getClassLoader().getResourceAsStream(resource)){
-            if(in == null){
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resource)) {
+            if (in == null) {
                 throw new RepositoryException("Config file not found in resources: " + resource);
             }
             prop.load(in);
-        }catch (IOException e){
-            throw new RepositoryException("Error while reading the config file" , e);
+        } catch (IOException e) {
+            throw new RepositoryException("Error while reading the config file", e);
         }
         return prop;
     }
 
-    private String getRequiredProperty(String key){
+    private String getRequiredProperty(String key) {
         String value = properties.getProperty(key);
-        if(value == null){
+        if (value == null) {
             throw new IllegalArgumentException("The required property '" + key + "' is missing");
         }
         return value;
     }
 
-    private RepositoryType readRepositoryType(){
+    private RepositoryType readRepositoryType() {
         String value = properties.getProperty("repository.type");
-        if(value == null){
+        if (value == null) {
             throw new IllegalArgumentException("The key repository.type is missing from the properties file");
         }
         return RepositoryType.valueOf(value.trim().toUpperCase());
     }
 
-    private Map<RepositoryType, Function<Validator<User> , PagingRepository<Long , User>>> buildUserRepositoryCreators(){
+    private Map<RepositoryType, Function<Validator<User>, PagingRepository<Long, User>>> buildUserRepositoryCreators() {
         return Map.of(
-                RepositoryType.MEMORY ,validator-> new InMemoryRepository<>(
+                RepositoryType.MEMORY, validator -> new InMemoryRepository<>(
                         validator,
                         IdGenerators::nextLong
                 ),
-                RepositoryType.FILE , validator -> new FileRepository<>(validator,
+                RepositoryType.FILE, validator -> new FileRepository<>(validator,
                         IdGenerators::nextLong,
-                        getRequiredProperty("repository.file.users") ,
-                        LineConverters::parseUser , LineConverters::formatUser),
-                RepositoryType.DATABASE , validator -> new UserDBRepository(validator,
-                        getRequiredProperty("db.url") ,getRequiredProperty("db.user") , getRequiredProperty("db.password"))
+                        getRequiredProperty("repository.file.users"),
+                        LineConverters::parseUser, LineConverters::formatUser),
+                RepositoryType.DATABASE, validator -> new UserDBRepository(validator,
+                        getRequiredProperty("db.url"), getRequiredProperty("db.user"), getRequiredProperty("db.password"))
 
         );
     }
 
-    private Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship>>> buildFriendshipRepositoryCreators(){
+    private Map<RepositoryType, Function<Validator<Friendship>, Repository<Tuple<Long, Long>, Friendship>>> buildFriendshipRepositoryCreators() {
         return Map.of(
-                RepositoryType.MEMORY ,  InMemoryRepository::new,
-                RepositoryType.FILE , validator-> new FileRepository<>(validator,
+                RepositoryType.MEMORY, InMemoryRepository::new,
+                RepositoryType.FILE, validator -> new FileRepository<>(validator,
                         getRequiredProperty("repository.file.friendships"),
-                        LineConverters::parseFriendship , LineConverters::formatFriendship),
-                RepositoryType.DATABASE , validator -> new FriendshipDBRepository(validator,
-                        getRequiredProperty("db.url") , getRequiredProperty("db.user") , getRequiredProperty("db.password"))
+                        LineConverters::parseFriendship, LineConverters::formatFriendship),
+                RepositoryType.DATABASE, validator -> new FriendshipDBRepository(validator,
+                        getRequiredProperty("db.url"), getRequiredProperty("db.user"), getRequiredProperty("db.password"))
         );
     }
 
-    private <E,R> R create(
-            Map<RepositoryType , Function<Validator<E> , R>> creators,
-            Validator<E> validator){
+    private <E, R> R create(
+            Map<RepositoryType, Function<Validator<E>, R>> creators,
+            Validator<E> validator) {
         return Optional.ofNullable(creators.get(repositoryType))
                 .map(creator -> creator.apply(validator))
                 .orElseThrow(() -> new RepositoryException("Unknown repository type provided"));
@@ -116,27 +119,29 @@ public class RepositoryFactory {
 
     /**
      * Creates a user repository based on the configured persistence type.
+     *
      * @param validator the validator used for user entities
      * @return a concrete implementation of {@link Repository} for users
      * @throws RepositoryException if the repository type is unknown or configuration fails
      */
-    public PagingRepository<Long, User> createUserRepository(Validator<User> validator){
-        return create(userRepositoryCreators ,validator);
+    public PagingRepository<Long, User> createUserRepository(Validator<User> validator) {
+        return create(userRepositoryCreators, validator);
     }
 
     /**
      * Creates a friendship repository based on the configured persistence type.
+     *
      * @param validator the validator used for friendship entities
      * @return a concrete implementation of {@link Repository} for friendships
      * @throws RepositoryException if the repository type is unknown or configuration fails
      */
-    public Repository<Tuple<Long,Long> , Friendship> createFriendshipRepository(Validator<Friendship> validator){
-        return create(friendshipRepositoryCreators , validator);
+    public Repository<Tuple<Long, Long>, Friendship> createFriendshipRepository(Validator<Friendship> validator) {
+        return create(friendshipRepositoryCreators, validator);
     }
 
-    public int getPageSize(){
-        int value  = Integer.parseInt(getRequiredProperty("page.size").trim());
-        if(value <=0 ){
+    public int getPageSize() {
+        int value = Integer.parseInt(getRequiredProperty("page.size").trim());
+        if (value <= 0) {
             throw new IllegalArgumentException("page.size must be a positive number");
         }
         return value;

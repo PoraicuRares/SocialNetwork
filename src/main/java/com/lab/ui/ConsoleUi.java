@@ -20,7 +20,7 @@ public class ConsoleUi {
     private final FriendshipService friendshipService;
     private final NetworkService networkService;
     private final Scanner scanner;
-    private final Map<String ,Runnable> commands;
+    private final Map<String, Runnable> commands;
     private final PageIterator pageIterator;
 
     public ConsoleUi(UserService userService, FriendshipService friendshipService, NetworkService networkService, int pageSize) {
@@ -39,37 +39,36 @@ public class ConsoleUi {
                 "8", this::handleShowMostSocialCommunity,
                 "9", this::handleShowFriendsOfUser
         );
-        this.pageIterator = new PageIterator(scanner,pageSize);
+        this.pageIterator = new PageIterator(scanner, pageSize);
     }
 
-    public void run(){
+    public void run() {
         boolean isRunning = true;
-        while(isRunning){
+        while (isRunning) {
             printMenu();
             System.out.print("Choose an option : ");
             String option = scanner.nextLine().trim();
-            if(option.equals("0")){
+            if (option.equals("0")) {
                 isRunning = false;
                 System.out.println("Exiting..");
-            }
-            else{
+            } else {
                 executeCommand(option);
             }
         }
     }
 
-    private void executeCommand(String option){
-        try{
+    private void executeCommand(String option) {
+        try {
             Optional.ofNullable(commands.get(option))
-                    .ifPresentOrElse(Runnable::run ,  () -> System.out.println("Invalid option"));
-        }catch(ValidationException | ServiceException | RepositoryException | EmptyListException e){
+                    .ifPresentOrElse(Runnable::run, () -> System.out.println("Invalid option"));
+        } catch (ValidationException | ServiceException | RepositoryException | EmptyListException e) {
             System.out.println("Error :" + e.getMessage());
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             System.out.println("Input error : please enter a valid numeric id");
         }
     }
 
-    private void printMenu(){
+    private void printMenu() {
         System.out.println("Social network menu : ");
         System.out.println("1.Add user");
         System.out.println("2.Remove user");
@@ -85,18 +84,18 @@ public class ConsoleUi {
         System.out.println("0.Exit");
     }
 
-    private void handleAddUser(){
+    private void handleAddUser() {
         System.out.print("Enter first name : ");
         String firstName = scanner.nextLine().trim();
 
         System.out.print("Enter last name: ");
         String lastName = scanner.nextLine().trim();
 
-        User saved = userService.add(new User(firstName,lastName));
+        User saved = userService.add(new User(firstName, lastName));
         System.out.println("User successfully added with id : " + saved.getId());
     }
 
-    private void handleRemoveUser(){
+    private void handleRemoveUser() {
         handleShowUsers();
         System.out.print("Enter the id of the user to remove : ");
         Long id = Long.parseLong(scanner.nextLine().trim());
@@ -105,12 +104,12 @@ public class ConsoleUi {
         System.out.println("User successfully removed");
     }
 
-    private void handleShowUsers(){
+    private void handleShowUsers() {
         System.out.println("\nUser list : ");
         pageIterator.browse(userService::findAllOnPage);
     }
 
-    private void handleAddFriendship(){
+    private void handleAddFriendship() {
         handleShowUsers();
         System.out.print("Enter the first user's id : ");
         Long id1 = Long.parseLong(scanner.nextLine().trim());
@@ -118,41 +117,41 @@ public class ConsoleUi {
         System.out.print("Enter the second user's id : ");
         Long id2 = Long.parseLong(scanner.nextLine().trim());
 
-        networkService.addFriendship(id1 , id2);
+        networkService.addFriendship(id1, id2);
         System.out.println("Friendship successfully added");
     }
 
-    private void handleRemoveFriendship(){
+    private void handleRemoveFriendship() {
         handleShowFriendships();
         System.out.print("Enter the first user's ID :");
         Long id1 = Long.parseLong(scanner.nextLine().trim());
 
         System.out.print("Enter the second user's ID :");
         Long id2 = Long.parseLong(scanner.nextLine().trim());
-        friendshipService.remove(new Tuple<>(id1 , id2));
+        friendshipService.remove(new Tuple<>(id1, id2));
         System.out.println("Friendship successfully removed");
     }
 
-    private void handleShowFriendships(){
+    private void handleShowFriendships() {
         System.out.println("\nFriendship list : ");
         friendshipService.findAll().forEach(System.out::println);
     }
 
-    private void handleShowNrOfCommunities(){
+    private void handleShowNrOfCommunities() {
         System.out.println("Number of communities is  " + networkService.getNumberOfCommunities());
     }
 
-    private void handleShowMostSocialCommunity(){
+    private void handleShowMostSocialCommunity() {
         networkService.getMostPopularCommunity().forEach(System.out::println);
     }
 
-    private void handleShowFriendsOfUser(){
+    private void handleShowFriendsOfUser() {
         handleShowUsers();
         System.out.println("Enter the user's ID :");
         Long id = Long.parseLong(scanner.nextLine().trim());
         System.out.println("Friends of user " + id + ": ");
         pageIterator.browse(
-                (pageNumber , size) -> networkService.findFriendsOnPage(id,pageNumber,size)
+                (pageNumber, size) -> networkService.findFriendsOnPage(id, pageNumber, size)
         );
     }
 }
