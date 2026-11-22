@@ -135,8 +135,11 @@ public class RepositoryFactory {
     }
 
     public int getPageSize(){
-        String value  = getRequiredProperty("page.size");
-        return Integer.parseInt(value);
+        int value  = Integer.parseInt(getRequiredProperty("page.size").trim());
+        if(value <=0 ){
+            throw new IllegalArgumentException("page.size must be a positive number");
+        }
+        return value;
     }
 
 }
