@@ -4,6 +4,8 @@ import com.lab.domain.*;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
+import com.lab.util.paging.Page;
+import com.lab.util.paging.Pageable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -125,5 +127,41 @@ public class NetworkService {
                 .map(Friendship::getId)
                 .forEach(friendshipService::remove);
         userService.remove(userId);
+    }
+
+    /**
+     * Returns one page of the friends of a user, sorted by id. With the database storage the page
+     * is built in SQL; with the other storages it is built here from the friend ids and the users
+     * @param userId     the id of the user
+     * @param pageNumber the index of the page, starting from 0
+     * @param pageSize   the number of friends on a page
+     * @return the friends on the page and the total number of friends; an empty page if it is after the last one
+     * @throws IllegalArgumentException if {@code pageNumber} is negative or {@code pageSize} is not positive
+     * @throws RepositoryException if the storage cannot be accessed
+     */
+    public Page<User> findFriendsOnPage(Long userId ,int pageNumber , int pageSize){
+        if(pageNumber < 0 || pageSize <= 0){
+            throw new IllegalArgumentException("Page number or size invalid");
+        }
+        Pageable pageable = new Pageable(pageNumber , pageSize);
+        return friendshipService.findFriendsOnPageInStorage(userId,pageable)
+                .orElseGet(() -> buildFriendsPage(userId , pageable));
+
+    }
+
+    private Page<User> buildFriendsPage(Long userId , Pageable pageable){
+        List<Long> list = friendshipService.getFriendsId(userId)
+                .stream()
+                .sorted()
+                .toList();
+
+        List<User> userList = list.stream()
+                .map(id -> userService.findOne(id)
+                        .orElseThrow(() -> new ServiceException("The user with this id does not exist!")))
+                .skip((long) pageable.pageNumber() * pageable.pageSize())
+                .limit(pageable.pageSize())
+                .toList();
+
+        return new Page<>(userList ,list.size());
     }
 }

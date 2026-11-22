@@ -1,12 +1,11 @@
 package com.lab.repository;
 
 import com.lab.domain.Entity;
-import com.lab.exceptions.RepositoryException;
+import com.lab.util.paging.Page;
+import com.lab.util.paging.Pageable;
 import com.lab.validator.Validator;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -15,8 +14,8 @@ import java.util.function.Function;
  * @param <ID> the type of the entity's identifier
  * @param <E> the type of the entity, which must extend Entity
  */
-public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository<ID , E>{
-    private final Map<ID , E> entities = new HashMap<>();
+public class InMemoryRepository<ID , E extends Entity<ID>> implements PagingRepository<ID , E>{
+    private final Map<ID , E> entities = new LinkedHashMap<>();
     private final Validator<E> validator;
     private final Function<Collection<ID>, ID> idGenerator;
 
@@ -77,4 +76,15 @@ public class InMemoryRepository<ID , E extends Entity<ID>> implements Repository
             throw new IllegalArgumentException(what + " must not be null");
         }
     }
+
+    @Override
+    public Page<E> findAllOnPage(Pageable pageable){
+       List<E> elementsOnPage = entities.values()
+               .stream()
+               .skip((long) pageable.pageSize() * pageable.pageNumber())
+               .limit(pageable.pageSize())
+               .toList();
+         return new Page<>(elementsOnPage, entities.size());
+    }
+
 }

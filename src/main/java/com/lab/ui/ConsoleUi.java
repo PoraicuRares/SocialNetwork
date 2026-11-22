@@ -21,8 +21,9 @@ public class ConsoleUi {
     private final NetworkService networkService;
     private final Scanner scanner;
     private final Map<String ,Runnable> commands;
+    private final PageIterator pageIterator;
 
-    public ConsoleUi(UserService userService, FriendshipService friendshipService, NetworkService networkService) {
+    public ConsoleUi(UserService userService, FriendshipService friendshipService, NetworkService networkService, int pageSize) {
         this.userService = userService;
         this.friendshipService = friendshipService;
         this.networkService = networkService;
@@ -35,8 +36,10 @@ public class ConsoleUi {
                 "5", this::handleRemoveFriendship,
                 "6", this::handleShowFriendships,
                 "7", this::handleShowNrOfCommunities,
-                "8", this::handleShowMostSocialCommunity
+                "8", this::handleShowMostSocialCommunity,
+                "9", this::handleShowFriendsOfUser
         );
+        this.pageIterator = new PageIterator(scanner,pageSize);
     }
 
     public void run(){
@@ -78,6 +81,7 @@ public class ConsoleUi {
 
         System.out.println("7.Show number of communities");
         System.out.println("8.Show most sociable community");
+        System.out.println("9.Show friends of an user");
         System.out.println("0.Exit");
     }
 
@@ -102,8 +106,8 @@ public class ConsoleUi {
     }
 
     private void handleShowUsers(){
-        System.out.println("\nUsers list : ");
-        userService.findAll().forEach(System.out::println);
+        System.out.println("\nUser list : ");
+        pageIterator.browse(userService::findAllOnPage);
     }
 
     private void handleAddFriendship(){
@@ -140,5 +144,15 @@ public class ConsoleUi {
 
     private void handleShowMostSocialCommunity(){
         networkService.getMostPopularCommunity().forEach(System.out::println);
+    }
+
+    private void handleShowFriendsOfUser(){
+        handleShowUsers();
+        System.out.println("Enter the user's ID :");
+        Long id = Long.parseLong(scanner.nextLine().trim());
+        System.out.println("Friends of user " + id + ": ");
+        pageIterator.browse(
+                (pageNumber , size) -> networkService.findFriendsOnPage(id,pageNumber,size)
+        );
     }
 }

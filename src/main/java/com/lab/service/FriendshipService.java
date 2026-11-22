@@ -3,14 +3,19 @@ package com.lab.service;
 import com.lab.domain.Friendship;
 import com.lab.domain.FriendshipCriteria;
 import com.lab.domain.Tuple;
+import com.lab.domain.User;
 import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
 import com.lab.exceptions.ValidationException;
+import com.lab.repository.FriendshipPagingRepository;
 import com.lab.repository.Repository;
+import com.lab.util.paging.Page;
+import com.lab.util.paging.Pageable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -114,5 +119,20 @@ public class FriendshipService {
         return findAll(FriendshipCriteria.involves(userId)).stream()
                 .map(friendship -> otherUser(friendship , userId))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Lists the friends of a user on pages directly in the storage, if the storage supports it
+     * (the database does it with a single SELECT and a JOIN)
+     * @param userId   the id of the user
+     * @param pageable the page number and the page size
+     * @return the page of friends, or an empty {@link Optional} if the storage cannot list friends on pages
+     * @throws RepositoryException if the storage cannot be accessed
+     */
+    public Optional<Page<User>> findFriendsOnPageInStorage(Long userId , Pageable pageable){
+        if(friendRepository instanceof FriendshipPagingRepository paging){
+            return Optional.of(paging.findFriendsOnPage(userId , pageable));
+        }
+        return Optional.empty();
     }
 }

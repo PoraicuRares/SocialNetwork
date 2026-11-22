@@ -1,12 +1,12 @@
 package com.lab.repository.factory;
 
-import com.lab.domain.Entity;
 import com.lab.domain.Friendship;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.RepositoryException;
 import com.lab.repository.IdGenerators;
 import com.lab.repository.InMemoryRepository;
+import com.lab.repository.PagingRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.db.FriendshipDBRepository;
 import com.lab.repository.db.UserDBRepository;
@@ -29,7 +29,7 @@ public class RepositoryFactory {
     private final Properties properties;
     private final RepositoryType repositoryType;
 
-    private final Map<RepositoryType, Function<Validator<User> , Repository<Long , User>>> userRepositoryCreators;
+    private final Map<RepositoryType, Function<Validator<User> , PagingRepository<Long , User>>> userRepositoryCreators;
     private final Map<RepositoryType , Function<Validator<Friendship> , Repository<Tuple<Long,Long> , Friendship> >> friendshipRepositoryCreators;
 
     private RepositoryFactory(String configFile){
@@ -79,7 +79,7 @@ public class RepositoryFactory {
         return RepositoryType.valueOf(value.trim().toUpperCase());
     }
 
-    private Map<RepositoryType, Function<Validator<User> , Repository<Long , User>>> buildUserRepositoryCreators(){
+    private Map<RepositoryType, Function<Validator<User> , PagingRepository<Long , User>>> buildUserRepositoryCreators(){
         return Map.of(
                 RepositoryType.MEMORY ,validator-> new InMemoryRepository<>(
                         validator,
@@ -106,8 +106,8 @@ public class RepositoryFactory {
         );
     }
 
-    private <ID,E extends Entity<ID>> Repository<ID ,E> create(
-            Map<RepositoryType , Function<Validator<E> , Repository<ID , E>>> creators,
+    private <E,R> R create(
+            Map<RepositoryType , Function<Validator<E> , R>> creators,
             Validator<E> validator){
         return Optional.ofNullable(creators.get(repositoryType))
                 .map(creator -> creator.apply(validator))
@@ -120,7 +120,7 @@ public class RepositoryFactory {
      * @return a concrete implementation of {@link Repository} for users
      * @throws RepositoryException if the repository type is unknown or configuration fails
      */
-    public Repository<Long ,User> createUserRepository(Validator<User> validator){
+    public PagingRepository<Long, User> createUserRepository(Validator<User> validator){
         return create(userRepositoryCreators ,validator);
     }
 
@@ -132,6 +132,11 @@ public class RepositoryFactory {
      */
     public Repository<Tuple<Long,Long> , Friendship> createFriendshipRepository(Validator<Friendship> validator){
         return create(friendshipRepositoryCreators , validator);
+    }
+
+    public int getPageSize(){
+        String value  = getRequiredProperty("page.size");
+        return Integer.parseInt(value);
     }
 
 }

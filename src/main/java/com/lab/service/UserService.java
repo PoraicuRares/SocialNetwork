@@ -5,11 +5,12 @@ import com.lab.exceptions.EmptyListException;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
 import com.lab.exceptions.ValidationException;
-import com.lab.repository.Repository;
+import com.lab.repository.PagingRepository;
+import com.lab.util.paging.Page;
+import com.lab.util.paging.Pageable;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -19,9 +20,9 @@ import java.util.stream.Stream;
  * Service class responsible for managing user-related operations
  */
 public class UserService {
-    private final Repository<Long , User> userRepository;
+    private final PagingRepository<Long, User> userRepository;
 
-    public UserService(Repository<Long, User> userRepository) {
+    public UserService(PagingRepository<Long, User> userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -111,5 +112,20 @@ public class UserService {
      */
     public Stream<User> stream(){
         return userRepository.stream();
+    }
+
+    /**
+     * Returns one page of users, sorted by id
+     * @param pageNumber the index of the page, starting from 0
+     * @param pageSize   the number of users on a page
+     * @return the users on the page and the total number of users; an empty page if it is after the last one
+     * @throws IllegalArgumentException if {@code pageNumber} is negative or {@code pageSize} is not positive
+     * @throws RepositoryException if the storage cannot be accessed
+     */
+    public Page<User> findAllOnPage(int pageNumber, int pageSize){
+        if(pageNumber < 0 || pageSize <= 0){
+            throw new IllegalArgumentException("Page number or size invalid");
+        }
+        return userRepository.findAllOnPage(new Pageable(pageNumber, pageSize));
     }
 }

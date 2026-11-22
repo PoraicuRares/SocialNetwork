@@ -3,6 +3,7 @@ import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ValidationException;
+import com.lab.repository.PagingRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.factory.RepositoryFactory;
 import com.lab.service.FriendshipService;
@@ -23,14 +24,14 @@ void main(){
                        throw new ValidationException("Names must have at most 50 characters");
                 });
 
-        Repository<Long ,User> userRepository = repositoryFactory.createUserRepository(userValidator);
+        PagingRepository<Long, User> userRepository = repositoryFactory.createUserRepository(userValidator);
         Repository<Tuple<Long,Long> , Friendship> friendshipRepository = repositoryFactory.createFriendshipRepository(new FriendshipValidator());
 
         UserService userService = new UserService(userRepository);
         FriendshipService friendshipService = new FriendshipService(friendshipRepository);
         NetworkService networkService = new NetworkService(friendshipService , userService);
 
-        ConsoleUi ui = new ConsoleUi(userService , friendshipService , networkService);
+        ConsoleUi ui = new ConsoleUi(userService , friendshipService , networkService , repositoryFactory.getPageSize());
         ui.run();
     }catch (RepositoryException | ValidationException | IllegalArgumentException | UnsupportedOperationException e){
         System.out.println("Error at start of the app :  " + e);
