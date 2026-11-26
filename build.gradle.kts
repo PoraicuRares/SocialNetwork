@@ -17,6 +17,7 @@ javafx{
 }
 
 application{
+    mainModule.set("com.lab")
     mainClass.set("com.lab.Main")
 }
 
