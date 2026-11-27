@@ -10,6 +10,7 @@ import com.lab.exceptions.ServiceException;
 import com.lab.exceptions.ValidationException;
 import com.lab.repository.FriendshipPagingRepository;
 import com.lab.repository.Repository;
+import com.lab.util.observer.AbstractObservable;
 import com.lab.util.paging.Page;
 import com.lab.util.paging.Pageable;
 
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
 /**
  * Service class responsible for managing friendship relations between users
  */
-public class FriendshipService {
+public class FriendshipService  extends AbstractObservable {
     private final Repository<Tuple<Long, Long>, Friendship> friendRepository;
     private static final Comparator<Friendship> BY_USERS_IDS =
             Comparator.comparing((Friendship f) -> f.getId().getLeft())
@@ -50,6 +51,7 @@ public class FriendshipService {
                 .ifPresent(existing -> {
                     throw new ServiceException("These users are already friends!");
                 });
+        notifyObservers();
         return friendship;
     }
 
@@ -63,8 +65,10 @@ public class FriendshipService {
         Long left = Math.min(id.getLeft(), id.getRight());
         Long right = Math.max(id.getLeft(), id.getRight());
         Tuple<Long, Long> normalizedId = new Tuple<>(left, right);
-        return friendRepository.delete(normalizedId)
+        Friendship deleted = friendRepository.delete(normalizedId)
                 .orElseThrow(() -> new ServiceException("There is no friendship with this id"));
+        notifyObservers();
+        return deleted;
     }
 
     /**

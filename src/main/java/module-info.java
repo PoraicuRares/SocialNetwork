@@ -4,6 +4,7 @@ module com.lab {
     requires javafx.fxml;
     requires org.postgresql.jdbc;
 
-    opens com.lab to javafx.fxml;
+    opens com.lab.controller to javafx.fxml;
+    opens com.lab.domain to javafx.base;
     exports com.lab;
 }

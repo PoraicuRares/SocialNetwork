@@ -6,6 +6,7 @@ import com.lab.exceptions.RepositoryException;
 import com.lab.exceptions.ServiceException;
 import com.lab.exceptions.ValidationException;
 import com.lab.repository.PagingRepository;
+import com.lab.util.observer.AbstractObservable;
 import com.lab.util.paging.Page;
 import com.lab.util.paging.Pageable;
 
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 /**
  * Service class responsible for managing user-related operations
  */
-public class UserService {
+public class UserService extends AbstractObservable {
     private final PagingRepository<Long, User> userRepository;
 
     public UserService(PagingRepository<Long, User> userRepository) {
@@ -40,6 +41,7 @@ public class UserService {
                 .ifPresent(existing -> {
                     throw new RepositoryException("A user with id " + existing.getId() + " already exists");
                 });
+        notifyObservers();
         return user;
     }
 
@@ -59,6 +61,7 @@ public class UserService {
                 .ifPresent(missing -> {
                     throw new ServiceException("There is no user with id " + missing.getId());
                 });
+        notifyObservers();
         return user;
     }
 
@@ -70,8 +73,10 @@ public class UserService {
      * @throws ServiceException if there is no user with the given id
      */
     public User remove(Long id) {
-        return userRepository.delete(id)
+        User removed = userRepository.delete(id)
                 .orElseThrow(() -> new ServiceException("There is no user with id " + id));
+        notifyObservers();
+        return removed;
     }
 
     /**
