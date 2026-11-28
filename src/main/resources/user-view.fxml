@@ -10,6 +10,16 @@
 <BorderPane xmlns = "http://javafx.com/javafx" xmlns:fx = "http://javafx.com/fxml"
             fx:controller="com.lab.controller.UserController">
     <padding><Insets top = "20" right = "20" left="20" bottom="20" /></padding>
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets bottom="12"/> </padding>
+            <Label text ="Users"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Add" onAction="#onAdd"/>
+            <Button fx:id="editButton" text="Edit" onAction="#onEdit"/>
+            <Button fx:id="deleteButton" text="Delete" onAction="#onDelete"/>
+        </HBox>
+    </top>
     <center>
         <TableView fx:id="userTable">
             <placeholder><Label text="There are no users"/> </placeholder>

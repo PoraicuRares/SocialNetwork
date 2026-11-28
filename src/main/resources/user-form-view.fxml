@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<GridPane xmlns = "http://javafx.com/javafx" xmlns:fx ="http://javafx.com/fxml"
+          fx:controller="com.lab.controller.UserFormController"
+          hgap="12" vgap="12">
+    <padding><Insets top ="20" right = "20" bottom = "20" left = "20"/></padding>
+    <Label text="First name" GridPane.rowIndex = "0" GridPane.columnIndex="0"/>
+    <TextField fx:id ="firstNameField" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="240"/>
+
+    <Label text = "Last name" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <TextField fx:id = "lastNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT"
+          GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
+        <Button text="Cancel" cancelButton="true" onAction="#onCancel"/>
+        <Button text="Save" defaultButton="true" onAction="#onSave"/>
+    </HBox>
+
+</GridPane>
