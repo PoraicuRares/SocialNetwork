@@ -2,6 +2,7 @@ package com.lab.controller;
 
 import com.lab.domain.User;
 import com.lab.exceptions.ServiceException;
+import com.lab.service.NetworkService;
 import com.lab.service.UserService;
 import com.lab.util.observer.Observer;
 import com.lab.util.paging.Page;
@@ -17,6 +18,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.IOException;
 
@@ -38,6 +40,7 @@ public class UserController implements Observer {
 
     private final ObservableList<User> usersOnPage = FXCollections.observableArrayList();
     private UserService userService;
+    private NetworkService networkService;
     private int pageSize;
     private int pageNumber = 0;
     private int totalPages = 1;
@@ -59,8 +62,9 @@ public class UserController implements Observer {
      * @param userService the service that provides and changes the users
      * @param pageSize    the number of users on a page
      */
-    public void setService(UserService userService , int pageSize){
+    public void setService(UserService userService , NetworkService networkService, int pageSize){
         this.userService = userService;
+        this.networkService=networkService;
         this.pageSize = pageSize;
         userService.addObserver(this);
         loadPage();
@@ -122,17 +126,16 @@ public class UserController implements Observer {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if(selected==null)
             return;
+        Window window = userTable.getScene().getWindow();
         String text = selected.getFirstName() + " " + selected.getLastName() ;
-        if(!MessageAlert.confirm(userTable.getScene().getWindow() , "Delete user" , "Delete user \"" + text + "\" ?" ))
+        if(!MessageAlert.confirm(window , "Delete user" , "Delete user \"" + text + "\" ?" ))
             return;
         try{
-            userService.remove(selected.getId());
+            networkService.deleteUser(selected.getId());
+            MessageAlert.showMessage(window , "User deleted" , "User \"" + text + "\" was deleted");
         }catch (ServiceException e){
-            MessageAlert.showMessage(userTable.getScene().getWindow() , "Deletion failed" , "Error while deleting : " +e.getMessage());
-            return;
+            MessageAlert.showErrorMessage(window , "Deletion failed" , "Error while deleting : " +e.getMessage());
         }
-        MessageAlert.showMessage(userTable.getScene().getWindow() , "User deleted" , "User \"" + text + "\" was deleted");
-        loadPage();
     }
 
     private void openForm(User user , String title){

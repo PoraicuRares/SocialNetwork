@@ -42,7 +42,7 @@ public class StartApplication extends Application {
         FXMLLoader loader = new FXMLLoader(StartApplication.class.getResource("/user-view.fxml"));
         primaryStage.setScene(new Scene(loader.load()));
         UserController userController = loader.getController();
-        userController.setService(userService, repositoryFactory.getPageSize());
+        userController.setService(userService, networkService , repositoryFactory.getPageSize());
         primaryStage.setTitle("Social network");
         primaryStage.show();
     }
