@@ -1,6 +1,7 @@
 package com.lab.repository.factory;
 
 import com.lab.domain.Friendship;
+import com.lab.domain.FriendshipRequest;
 import com.lab.domain.Tuple;
 import com.lab.domain.User;
 import com.lab.exceptions.RepositoryException;
@@ -9,6 +10,7 @@ import com.lab.repository.InMemoryRepository;
 import com.lab.repository.PagingRepository;
 import com.lab.repository.Repository;
 import com.lab.repository.db.FriendshipDBRepository;
+import com.lab.repository.db.FriendshipRequestDBRepository;
 import com.lab.repository.db.UserDBRepository;
 import com.lab.repository.file.FileRepository;
 import com.lab.repository.file.LineConverters;
@@ -33,12 +35,14 @@ public class RepositoryFactory {
 
     private final Map<RepositoryType, Function<Validator<User>, PagingRepository<Long, User>>> userRepositoryCreators;
     private final Map<RepositoryType, Function<Validator<Friendship>, Repository<Tuple<Long, Long>, Friendship>>> friendshipRepositoryCreators;
+    private final Map<RepositoryType,Function<Validator<FriendshipRequest> , Repository<Long, FriendshipRequest>>> friendshipRequestRepositoryCreators;
 
     private RepositoryFactory(String configFile) {
         properties = loadProperties(configFile);
         repositoryType = readRepositoryType();
         userRepositoryCreators = buildUserRepositoryCreators();
         friendshipRepositoryCreators = buildFriendshipRepositoryCreators();
+        friendshipRequestRepositoryCreators = buildFriendshipRequestRepositoryCreators();
     }
 
     /**
@@ -109,6 +113,13 @@ public class RepositoryFactory {
         );
     }
 
+    private Map<RepositoryType,Function<Validator<FriendshipRequest> , Repository<Long, FriendshipRequest>>> buildFriendshipRequestRepositoryCreators(){
+        return Map.of(
+            RepositoryType.DATABASE,validator-> new FriendshipRequestDBRepository(validator,
+                        getRequiredProperty("db.url"), getRequiredProperty("db.user") , getRequiredProperty("db.password"))
+        );
+    }
+
     private <E, R> R create(
             Map<RepositoryType, Function<Validator<E>, R>> creators,
             Validator<E> validator) {
@@ -137,6 +148,10 @@ public class RepositoryFactory {
      */
     public Repository<Tuple<Long, Long>, Friendship> createFriendshipRepository(Validator<Friendship> validator) {
         return create(friendshipRepositoryCreators, validator);
+    }
+
+    public Repository<Long,FriendshipRequest> createFriendshipRequestRepository(Validator<FriendshipRequest> validator){
+        return create(friendshipRequestRepositoryCreators , validator);
     }
 
     public int getPageSize() {

@@ -13,3 +13,14 @@ CREATE TABLE friendships(
     CONSTRAINT fk_friendships_user1 FOREIGN KEY(id1) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_friendships_user2 FOREIGN KEY(id2) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE friend_requests(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY ,
+    from_id BIGINT NOT NULL ,
+    to_id BIGINT NOT NULL,
+    status VARCHAR(10) NOT NULL CHECK(status IN('PENDING' , 'APPROVED' , 'REJECTED')),
+    date TIMESTAMP NOT NULL,
+    CONSTRAINT fk_from_id_user1 FOREIGN KEY(from_id) REFERENCES users(id) ON DELETE CASCADE ,
+    CONSTRAINT fk_to_id_user2 FOREIGN KEY(to_id) REFERENCES users(id) ON DELETE CASCADE ,
+    CONSTRAINT ck_friend_requests_not_self CHECK(from_id <> to_id)
+);
