@@ -6,9 +6,66 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lab.controller.UserProfileController"
+            prefWidth="1100" prefHeight="450">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <top>
+        <Label fx:id="currentUserLabel">
+            <padding><Insets bottom="12"/></padding>
+        </Label>
+    </top>
+    <center>
+        <HBox spacing="16">
 
-</AnchorPane>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text = "Friends"/>
+                <TableView fx:id="friendsTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="No friends yet"/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="friendIdColumn" text="Id" sortable="false"/>
+                        <TableColumn fx:id="friendFirstNameColumn" text="First name" sortable="false"/>
+                        <TableColumn fx:id="friendLastNameColumn" text="Last name" sortable="false"/>
+                    </columns>
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/> </columnResizePolicy>
+                </TableView>
+                <HBox spacing = "10" alignment="CENTER_LEFT">
+                    <Button fx:id="previousFriendsButton" text="Previous" onAction="#onPreviousFriends"/>
+                    <Label fx:id="friendsPageLabel"/>
+                    <Button fx:id="nextFriendsButton" text="Next" onAction="#onNextFriends"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text = "Friendship request received"/>
+                <TableView fx:id="requestsTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="No requests"/> </placeholder>
+                    <columns>
+                        <TableColumn fx:id="requestFromColumn" text="From" sortable="false"/>
+                        <TableColumn fx:id="requestDateColumn" text="Date" sortable="false"/>
+                    </columns>
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/> </columnResizePolicy>
+                </TableView>
+                <HBox spacing="10">
+                    <Button fx:id="approveButton" text="Approve" onAction="#onApprove"/>
+                    <Button fx:id="rejectButton" text="Reject" onAction="#onReject"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text = "Other users"/>
+                <TableView fx:id="otherUsersTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="No other users"/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="otherIdColumn" text="Id" sortable="false"/>
+                        <TableColumn fx:id="otherFirstNameColumn" text="First name" sortable="false"/>
+                        <TableColumn fx:id="otherLastNameColumn" text="Last name" sortable="false"/>
+                    </columns>
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/> </columnResizePolicy>
+                </TableView>
+                <Button fx:id="sendRequestButton" text="Send friendship request" onAction="#onSendRequest"/>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

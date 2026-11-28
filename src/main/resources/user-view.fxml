@@ -15,6 +15,7 @@
             <padding><Insets bottom="12"/> </padding>
             <Label text ="Users"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="loginButton" text="Login as" onAction="#onLogin"/>
             <Button text="Add" onAction="#onAdd"/>
             <Button fx:id="editButton" text="Edit" onAction="#onEdit"/>
             <Button fx:id="deleteButton" text="Delete" onAction="#onDelete"/>

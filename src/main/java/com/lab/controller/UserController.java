@@ -2,6 +2,8 @@ package com.lab.controller;
 
 import com.lab.domain.User;
 import com.lab.exceptions.ServiceException;
+import com.lab.service.FriendshipRequestService;
+import com.lab.service.FriendshipService;
 import com.lab.service.NetworkService;
 import com.lab.service.UserService;
 import com.lab.util.observer.Observer;
@@ -37,10 +39,14 @@ public class UserController implements Observer {
     @FXML private Label pageLabel;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
+    @FXML private Button loginButton;
 
     private final ObservableList<User> usersOnPage = FXCollections.observableArrayList();
     private UserService userService;
     private NetworkService networkService;
+    private FriendshipService friendshipService;
+    private FriendshipRequestService requestService;
+
     private int pageSize;
     private int pageNumber = 0;
     private int totalPages = 1;
@@ -55,6 +61,7 @@ public class UserController implements Observer {
         var noSelection = userTable.getSelectionModel().selectedItemProperty().isNull();
         editButton.disableProperty().bind(noSelection);
         deleteButton.disableProperty().bind(noSelection);
+        loginButton.disableProperty().bind(noSelection);
     }
 
     /**
@@ -62,9 +69,11 @@ public class UserController implements Observer {
      * @param userService the service that provides and changes the users
      * @param pageSize    the number of users on a page
      */
-    public void setService(UserService userService , NetworkService networkService, int pageSize){
+    public void setService(UserService userService , NetworkService networkService, FriendshipService friendshipService , FriendshipRequestService requestService,int pageSize){
         this.userService = userService;
         this.networkService=networkService;
+        this.friendshipService = friendshipService;
+        this.requestService=requestService;
         this.pageSize = pageSize;
         userService.addObserver(this);
         loadPage();
@@ -138,6 +147,27 @@ public class UserController implements Observer {
         }
     }
 
+    @FXML
+    private void onLogin(){
+        User selected = userTable.getSelectionModel().getSelectedItem();
+        if(selected == null){
+            return;
+        }
+        Window window = userTable.getScene().getWindow();
+        try{
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/user-profile-view.fxml"));
+            Stage profileWindow = new Stage();
+            profileWindow.setScene(new Scene(loader.load()));
+            UserProfileController profileController = loader.getController();
+            profileController.setService(selected,userService,networkService,friendshipService,requestService,pageSize);
+            profileWindow.setTitle("Logged in as " + selected.getFirstName() + " " +selected.getLastName());
+            profileWindow.initOwner(window);
+            profileWindow.setOnHidden(event -> profileController.stopListening());
+            profileWindow.show();
+        } catch (IOException e) {
+            MessageAlert.showErrorMessage(window,"Error" , "The profile window cannot be opened " + e.getMessage());
+        }
+    }
     private void openForm(User user , String title){
         try{
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/user-form-view.fxml"));
